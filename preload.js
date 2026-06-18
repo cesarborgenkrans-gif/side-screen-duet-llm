@@ -10,4 +10,5 @@ contextBridge.exposeInMainWorld('duet', {
   ttsGenerate: opts => ipcRenderer.invoke('tts-generate', opts),
   vramTelemetry: baseURL => ipcRenderer.invoke('vram-telemetry', baseURL),
   vramUnload: baseURL => ipcRenderer.invoke('vram-unload', baseURL),
+  openURL: url => ipcRenderer.invoke('open-url', url),
 });

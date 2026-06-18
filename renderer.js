@@ -354,6 +354,12 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     setStatus(`Mode: ${MODES[currentMode].label}. ${source ? 'Press ▶ to start.' : 'Now load a source.'}`, 'ok');
   }));
 
+  // ── credits (open in external browser) ──
+  document.querySelectorAll('.credit-link').forEach(a => a.addEventListener('click', () => {
+    const url = a.dataset.url; if (!url) return;
+    if (bridge) bridge.openURL(url); else window.open(url, '_blank', 'noopener');
+  }));
+
   // ── init ──
   applySettingsToFields();
   setActiveMode();

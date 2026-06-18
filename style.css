@@ -177,3 +177,10 @@ button:disabled{opacity:.5;cursor:wait;}
 /* novel-style typewriter caret */
 .msg-body.typing::after{content:'▌';color:var(--purple);margin-left:2px;animation:tw-blink 1s step-end infinite;}
 @keyframes tw-blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* credits footer (house protocol — small text link to brand + github) */
+.credits{flex-shrink:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;
+  padding-top:8px;font-family:var(--mono);font-size:1rem;color:var(--dim);letter-spacing:.03em;}
+.credits .sep{opacity:.5;}
+.credit-link{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--border-hot);}
+.credit-link:hover{color:var(--purple);}

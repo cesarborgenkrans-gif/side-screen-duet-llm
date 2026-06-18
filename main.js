@@ -5,7 +5,7 @@
    llm-chat (messages[]-based, proxied to LM Studio to dodge CORS + support vision),
    llm-models (connection test). One LM Studio model drives both personas.
    ============================================================ */
-const { app, BrowserWindow, screen, ipcMain, globalShortcut } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, globalShortcut, shell } = require('electron');
 const path = require('path');
 const fs = require('fs/promises');
 const fsSync = require('fs');
@@ -149,6 +149,13 @@ ipcMain.handle('vram-unload', async (_e, baseURL) => {
     if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
     return { ok: true, ...(await res.json()) };
   } catch (e) { return { ok: false, error: e.message }; }
+});
+
+// ── open a credit link in the external browser ──
+ipcMain.handle('open-url', async (_e, url) => {
+  if (!/^https?:\/\//.test(url)) return { ok: false, error: 'invalid URL' };
+  try { await shell.openExternal(url); return { ok: true }; }
+  catch (e) { return { ok: false, error: e.message }; }
 });
 
 app.whenReady().then(() => {
