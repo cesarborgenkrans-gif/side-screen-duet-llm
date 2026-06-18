@@ -26,6 +26,8 @@
     tsuki:  'A bright, youthful, energetic young woman; light and airy, clear and expressive, slightly high-pitched and playful, warm anime-idol energy.',
     selene: 'A soft, calm, dreamy young woman; gentle and breathy, lower-pitched and soothing, slow and a little mysterious, elegant and ethereal.'
   };
+  // Static per-mascot seeds → each voice stays consistent run-to-run (no random drift).
+  const VOICE_SEED = { tsuki: 28, selene: 88 };
 
   // ── personas (THEATRE layer — distinct voices; never affects factual validity) ──
   // Faithful to each character's defined Speech Pattern. The generic gen-z/gyaru
@@ -59,6 +61,13 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     ` FOCUS (critical): respond DIRECTLY to your partner's most recent point — name or quote the exact claim, then advance it. `
     + `Do NOT introduce unrelated new topics or drift away from the source; keep the thread tight and on-material.`;
 
+  // Deep Dive must be genuinely useful — substance over theatrics, converge, don't perform.
+  const SUBSTANCE_FIRST =
+    ` SUBSTANCE OVER STYLE (this overrides your persona flavor for this mode): you are actually HELPING the user, not performing. `
+    + `This is NOT a skit and NOT roleplay. Keep persona flavor to at most a brief one-phrase garnish, and DROP the repeated imagery/catchphrases entirely — no "shimmer", "beep-boop", "luminous", "cache-dream", "stardust", "digital couture", "vibe-shift" filler. `
+    + `Lead with concrete, correct, specific content that directly answers the source: real steps, commands, config keys, names, numbers, and caveats. `
+    + `Each turn must ADD new specifics and CONVERGE toward a complete, genuinely useful answer — never restate, re-praise, or circle what's already been said.`;
+
   const MODES = {
     roast: {
       label: 'Roast', first: 'tsuki',
@@ -83,11 +92,11 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     },
     deepdive: {
       label: 'Deep Dive', first: 'tsuki',
-      framing: 'You are collaboratively ANALYZING the SOURCE to give the user real insight. No fluff.',
+      framing: 'You are collaboratively giving the user a genuinely USEFUL, correct, concrete answer/analysis about the SOURCE. This is real help — not a performance, not a skit.',
       role: sp => (sp === 'tsuki'
-        ? `Your role: SCOUT — surface the big-picture signal: what this really is, its key claims, why it matters, what it connects to.`
-        : `Your role: MYSTIC — surface the hidden layer your partner missed: edge cases, unstated assumptions, risks, subtle implications. Add depth, don't repeat.`)
-        + STAY_ON_THREAD,
+        ? `Your role: SCOUT — give the big-picture answer: what the source is really asking or claiming, the key correct points, and the concrete path forward (actual steps, names, configs).`
+        : `Your role: MYSTIC — add the hidden layer WITH SUBSTANCE: edge cases, gotchas, prerequisites, risks, and corrections your partner missed. Concrete specifics, not vibes.`)
+        + STAY_ON_THREAD + SUBSTANCE_FIRST,
       roleLabel: sp => sp === 'tsuki' ? 'SCOUT' : 'MYSTIC'
     }
   };
@@ -251,7 +260,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
       let tts = null;
       if (voice) {
         $('log-tag').textContent = `[ ${name} finding her voice… ]`;
-        tts = await bridge.ttsGenerate({ baseURL: settings.voiceURL, text, voice_design: VOICE_DESIGN[speaker] });
+        tts = await bridge.ttsGenerate({ baseURL: settings.voiceURL, text, voice_design: VOICE_DESIGN[speaker], seed: VOICE_SEED[speaker] });
         if (!tts.ok) setStatus('Voice unavailable (continuing text-only): ' + tts.error, 'warn');
       }
       if (abort) { setSpeaking(speaker, false); break; }
