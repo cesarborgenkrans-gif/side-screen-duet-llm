@@ -95,7 +95,8 @@ ipcMain.handle('llm-chat', async (_e, opts) => {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey || 'lm-studio'}` },
-      body: JSON.stringify({ model: model || 'local-model', messages, temperature: typeof temperature === 'number' ? temperature : 0.7, stream: false })
+      body: JSON.stringify({ model: model || 'local-model', messages, temperature: typeof temperature === 'number' ? temperature : 0.7,
+        frequency_penalty: 0.6, presence_penalty: 0.4, stream: false })
     });
     if (!res.ok) return { ok: false, error: `LM Studio HTTP ${res.status}: ${(await res.text()).slice(0, 240)}` };
     const data = await res.json();

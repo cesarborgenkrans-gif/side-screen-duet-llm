@@ -72,7 +72,9 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   };
   const SHARED_RULES =
     `\n\nRULES: Stay fully in your OWN distinct, elegant character voice (the portal mockup is your north star — curious, timeless, quirky, a little Japanese). BUT the substance must be genuinely correct and grounded in your ROLE + TASK and the SOURCE; never let the persona make you inaccurate, vague, or generic. `
-    + `Reply ONLY as your character, in first person, in **1–3 SHORT sentences (~45 words total, hard max)**. Your words are SPOKEN ALOUD, so keep each sentence brief and natural to say. No markdown headings; no stage directions beyond a tiny inline emote.`;
+    + `Reply ONLY as your character, in first person, in **1–3 SHORT sentences (~45 words total, hard max)**. Your words are SPOKEN ALOUD, so keep each sentence brief and natural to say. `
+    + `NEVER repeat a sentence, joke, image, or signature phrase that already appears earlier in the discussion (yours or your partner's) — bring something NEW each turn. `
+    + `Do NOT prefix your reply with your own name or any label. No markdown headings; no stage directions beyond a tiny inline emote.`;
 
   // Who the speaker addresses. Duel/Skit = each other; Roast/Deep Dive = the user.
   const ADDRESS_PARTNER = ` Address your partner by name (Tsuki-chan / Selene-chan) as you engage them.`;
@@ -97,7 +99,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     roast: {
       label: 'Roast', first: 'tsuki',
       framing: 'You are BOTH roasting the USER over their SOURCE — a playful tag-team comedy roast aimed at the user and their material. Witty, exaggerated, savage-but-affectionate. Gang up together; do NOT roast each other.',
-      role: () => `Land a genuinely funny, SPECIFIC burn about something real in the user's source, piling onto your partner's previous jab — you two are a duo roasting the user, not rivals.`,
+      role: () => `Land a genuinely funny, SPECIFIC burn about something real in the user's source, piling onto your partner's previous jab — you two are a duo roasting the user, not rivals. Each turn must land a FRESH burn from a NEW angle; never reuse a punchline, phrase, or image already said.`,
       address: ADDRESS_USER,
       roleLabel: () => 'ROASTER'
     },
@@ -141,7 +143,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     try {
       const res = await fetch(`${trimURL(settings.url)}/chat/completions`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: settings.model || 'local-model', messages, temperature: Number(settings.temp), stream: false })
+        body: JSON.stringify({ model: settings.model || 'local-model', messages, temperature: Number(settings.temp), frequency_penalty: 0.6, presence_penalty: 0.4, stream: false })
       });
       if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
       const d = await res.json();
