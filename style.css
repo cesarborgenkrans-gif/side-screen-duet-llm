@@ -162,3 +162,18 @@ button:disabled{opacity:.5;cursor:wait;}
 .status.ok{color:var(--selene);}
 .status.warn{color:#ffe57f;}
 .status.err{color:#ff8f8f;}
+
+/* VRAM gauge chip (WaifuVoice telemetry) */
+.vram{font-family:var(--mono);font-size:1.05rem;letter-spacing:.03em;padding:8px 12px;
+  border-radius:99px;border:1px solid var(--border);white-space:nowrap;}
+.vram.off{color:var(--dim);}
+.vram.ok{color:var(--selene);border-color:rgba(24,255,255,.35);}
+.vram.warn{color:#ffe57f;border-color:rgba(255,229,127,.55);box-shadow:0 0 12px rgba(255,229,127,.2);}
+
+/* settings checkbox row */
+.settings label.chk{flex-direction:row;align-items:center;gap:10px;text-transform:none;font-size:1.2rem;color:var(--text);}
+.settings label.chk input{width:auto;transform:scale(1.4);accent-color:var(--purple);}
+
+/* novel-style typewriter caret */
+.msg-body.typing::after{content:'▌';color:var(--purple);margin-left:2px;animation:tw-blink 1s step-end infinite;}
+@keyframes tw-blink{0%,100%{opacity:1}50%{opacity:0}}

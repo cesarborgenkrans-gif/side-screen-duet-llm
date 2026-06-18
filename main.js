@@ -116,6 +116,41 @@ ipcMain.handle('llm-models', async (_e, opts) => {
   } catch (e) { return { ok: false, error: e.message }; }
 });
 
+// ── WaifuVoice add-on: synthesize a line → WAV (base64) ──
+const trimU = u => (u || 'http://localhost:3113').replace(/\/+$/, '');
+ipcMain.handle('tts-generate', async (_e, opts) => {
+  const { baseURL, text, voice_design, language, cfg_value, inference_timesteps, seed } = opts || {};
+  try {
+    const res = await fetch(`${trimU(baseURL)}/api/generate`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text, voice_design: voice_design || '', language: language || 'English', mode: 'voice-design',
+        cfg_value: cfg_value ?? 2.0, inference_timesteps: inference_timesteps ?? 10,
+        seed: seed ?? -1, max_len: 4096, denoise: false, consent_ack: true
+      })
+    });
+    if (!res.ok) return { ok: false, error: `WaifuVoice HTTP ${res.status}: ${(await res.text()).slice(0, 200)}` };
+    const buf = Buffer.from(await res.arrayBuffer());
+    return { ok: true, base64: buf.toString('base64'), mime: 'audio/wav', sampleRate: res.headers.get('X-Sample-Rate') || '' };
+  } catch (e) { return { ok: false, error: `${e.message} — is WaifuVoice running at ${trimU(baseURL)}?` }; }
+});
+
+// ── WaifuVoice VRAM telemetry / unload (overload protection) ──
+ipcMain.handle('vram-telemetry', async (_e, baseURL) => {
+  try {
+    const res = await fetch(`${trimU(baseURL)}/api/vram`);
+    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+    return { ok: true, ...(await res.json()) };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('vram-unload', async (_e, baseURL) => {
+  try {
+    const res = await fetch(`${trimU(baseURL)}/api/vram/unload`, { method: 'POST' });
+    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+    return { ok: true, ...(await res.json()) };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+
 app.whenReady().then(() => {
   logDisplays();
   createWindow();

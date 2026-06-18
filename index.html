@@ -13,10 +13,11 @@
 
     <!-- ══ TOP BAR ══ -->
     <header class="topbar">
-      <div class="brand">🎭 DUET <span>// tsuki × selene</span></div>
+      <div class="brand">🎭 DUET <span>// tsuki × selene · 🔊 voice</span></div>
       <div class="right">
+        <span id="vram" class="vram off" title="">VRAM —</span>
         <span id="conn" class="conn checking" title="">◐ checking…</span>
-        <button id="gear" class="ghost" title="LM Studio settings">⚙ settings</button>
+        <button id="gear" class="ghost" title="LM Studio + WaifuVoice settings">⚙ settings</button>
       </div>
     </header>
 
@@ -27,8 +28,11 @@
       <label>Model (optional)<input id="cfg-model" type="text" placeholder="(uses the loaded model)"></label>
       <label>Temperature<input id="cfg-temp" type="number" min="0" max="2" step="0.1" value="0.7"></label>
       <label>API Key (any, for local)<input id="cfg-key" type="text" placeholder="lm-studio"></label>
+      <label>WaifuVoice URL<input id="cfg-voice-url" type="text" placeholder="http://localhost:3113"></label>
+      <label class="chk"><input id="cfg-voice-on" type="checkbox"> 🔊 Voice output (auto-play)</label>
       <div class="row-actions">
         <button id="cfg-save" class="primary">Save &amp; test connection</button>
+        <button id="btn-unload" class="ghost" title="Free the voice model's VRAM">⤓ unload voice</button>
         <span id="cfg-status" class="muted"></span>
       </div>
     </section>

@@ -15,10 +15,17 @@
   const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
   // ── settings ──
-  const DEFAULTS = { url: 'http://localhost:1234/v1', model: '', temp: 0.7, key: 'lm-studio' };
+  const DEFAULTS = { url: 'http://localhost:1234/v1', model: '', temp: 0.7, key: 'lm-studio',
+                     voiceURL: 'http://localhost:3113', voiceOn: true };
   const loadSettings = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('duet-settings') || '{}') }; } catch { return { ...DEFAULTS }; } };
   let settings = loadSettings();
   const trimURL = u => (u || DEFAULTS.url).replace(/\/+$/, '');
+
+  // Per-mascot VoxCPM voice-design prompts (WaifuVoice add-on) — the two voices differ here.
+  const VOICE_DESIGN = {
+    tsuki:  'A bright, youthful, energetic young woman; light and airy, clear and expressive, slightly high-pitched and playful, warm anime-idol energy.',
+    selene: 'A soft, calm, dreamy young woman; gentle and breathy, lower-pitched and soothing, slow and a little mysterious, elegant and ethereal.'
+  };
 
   // ── personas (THEATRE layer — distinct voices; never affects factual validity) ──
   // Faithful to each character's defined Speech Pattern. The generic gen-z/gyaru
@@ -44,7 +51,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   };
   const SHARED_RULES =
     `\n\nRULES: Stay fully in your OWN distinct, elegant character voice (the portal mockup is your north star — curious, timeless, quirky, a little Japanese). BUT the substance must be genuinely correct and grounded in your ROLE + TASK and the SOURCE; never let the persona make you inaccurate, vague, or generic. `
-    + `Reply ONLY as your character, in first person, ONE short paragraph (~90–130 words). Address your partner by name. No markdown headings; no stage directions beyond a tiny inline emote.`;
+    + `Reply ONLY as your character, in first person, in **1–3 SHORT sentences (~45 words total, hard max)**. Your words are SPOKEN ALOUD, so keep each sentence brief and natural to say. Address your partner by name. No markdown headings; no stage directions beyond a tiny inline emote.`;
 
   // ── modes (define the two ROLES + the task framing) ──
   // Each turn, the speaker is reminded to engage the partner's LAST point.
@@ -134,7 +141,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     const head = `SOURCE MATERIAL (${source.name}):`;
     const tail = `\n\n— DISCUSSION SO FAR —\n${transcriptText(transcript)}\n\n`
       + (isFirst ? `You OPEN the ${mode.label}. ` : '')
-      + `Now reply ONLY as ${P.name}, in character, one short paragraph.`;
+      + `Now reply ONLY as ${P.name}, in character, in 1–3 short sentences (it will be spoken aloud).`;
 
     let userContent;
     if (source.kind === 'image') {
@@ -151,18 +158,66 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
 
   // ── log rendering ──
   function clearLog() { $('log').innerHTML = ''; }
-  function appendMsg(speaker, modeKey, text) {
+  function appendMsgShell(speaker, modeKey) {
     const P = PERSONAS[speaker];
     const role = MODES[modeKey].roleLabel(speaker);
     const div = document.createElement('div');
     div.className = 'msg ' + speaker;
     div.innerHTML = `<div class="msg-name">${P.emoji} ${P.name} <span class="msg-role">· ${esc(role)}</span></div>`
-      + `<div class="msg-body">${esc(text)}</div>`;
+      + `<div class="msg-body"></div>`;
     $('log').appendChild(div);
     $('log').scrollTop = $('log').scrollHeight;
+    return div.querySelector('.msg-body');
   }
   function setSpeaking(speaker, on) {
     $(speaker === 'tsuki' ? 'tsuki-stage' : 'selene-stage').classList.toggle('speaking', on);
+  }
+
+  // ── novel-style typewriter (resolves when the full line is revealed) ──
+  function typewriter(el, text, paceMs) {
+    return new Promise(resolve => {
+      el.classList.add('typing'); let i = 0;
+      (function step() {
+        if (abort) { el.textContent = text; el.classList.remove('typing'); return resolve(); }
+        if (i <= text.length) { el.textContent = text.slice(0, i); i++; $('log').scrollTop = $('log').scrollHeight; setTimeout(step, paceMs); }
+        else { el.classList.remove('typing'); resolve(); }
+      })();
+    });
+  }
+
+  // ── audio ──
+  let currentAudio = null;
+  function stopAudio() { if (currentAudio) { try { currentAudio.pause(); } catch {} currentAudio = null; } }
+  function loadAudio(base64, mime) {
+    return new Promise(resolve => {
+      let done = false; const finish = a => { if (!done) { done = true; resolve(a); } };
+      const a = new Audio(`data:${mime || 'audio/wav'};base64,${base64}`);
+      a.addEventListener('loadedmetadata', () => finish(a));
+      a.addEventListener('error', () => finish(null));
+      setTimeout(() => finish(a), 1500);   // fallback if metadata is slow
+    });
+  }
+  // Reveal text + play voice together; resolves only when BOTH the typewriter
+  // has reached the end AND the audio has finished playing (turn-gating).
+  async function speakLine(bodyEl, text, tts) {
+    let audio = null, durMs = 0;
+    if (tts && tts.ok) {
+      audio = await loadAudio(tts.base64, tts.mime);
+      if (audio && isFinite(audio.duration) && audio.duration > 0) durMs = audio.duration * 1000;
+    }
+    const pace = durMs ? Math.max(14, Math.min(55, (durMs * 0.92) / Math.max(1, text.length))) : 30;
+    const tw = typewriter(bodyEl, text, pace);
+    let ap = Promise.resolve();
+    if (audio && !abort) {
+      currentAudio = audio;
+      ap = new Promise(res => {
+        audio.addEventListener('ended', res);
+        audio.addEventListener('error', res);
+        audio.play().catch(res);
+      });
+    }
+    await Promise.all([tw, ap]);
+    currentAudio = null;
   }
 
   // ── the duet loop ──
@@ -177,26 +232,69 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     if (!currentMode) { setStatus('Pick a mode (Roast / Duel / Skit / Deep Dive) first.', 'warn'); return; }
     if (!source) { setStatus('Load a source first — paste a file path or text, then “Load source”.', 'warn'); return; }
     abort = false; toggleRun(true); clearLog();
+    const voice = bridge && settings.voiceOn;
+    if (voice) await preflightVram();
     const transcript = [];
     const turns = Math.max(2, Math.min(12, parseInt($('turns').value, 10) || 6));
     let speaker = MODES[currentMode].first;
     for (let i = 0; i < turns && !abort; i++) {
+      const name = PERSONAS[speaker].name;
       setSpeaking(speaker, true);
-      $('log-tag').textContent = `[ ${PERSONAS[speaker].name} thinking… ]`;
-      setStatus(`${PERSONAS[speaker].name} is composing turn ${i + 1}/${turns}…`);
-      const msgs = buildMessages(speaker, currentMode, transcript, i === 0);
-      const r = await llmChat(msgs);
-      setSpeaking(speaker, false);
-      if (abort) break;
-      if (!r.ok) { setStatus('LLM error: ' + r.error, 'err'); $('log-tag').textContent = '[ ERROR ]'; toggleRun(false); return; }
+      $('log-tag').textContent = `[ ${name} composing… ]`;
+      setStatus(`${name} is composing turn ${i + 1}/${turns}…`);
+      const r = await llmChat(buildMessages(speaker, currentMode, transcript, i === 0));
+      if (abort) { setSpeaking(speaker, false); break; }
+      if (!r.ok) { setSpeaking(speaker, false); setStatus('LLM error: ' + r.error, 'err'); $('log-tag').textContent = '[ ERROR ]'; toggleRun(false); return; }
       const text = (r.text || '').trim() || '…';
+
+      // synthesize this line (per-mascot voice) before revealing/playing
+      let tts = null;
+      if (voice) {
+        $('log-tag').textContent = `[ ${name} finding her voice… ]`;
+        tts = await bridge.ttsGenerate({ baseURL: settings.voiceURL, text, voice_design: VOICE_DESIGN[speaker] });
+        if (!tts.ok) setStatus('Voice unavailable (continuing text-only): ' + tts.error, 'warn');
+      }
+      if (abort) { setSpeaking(speaker, false); break; }
+
+      $('log-tag').textContent = `[ ${name} speaking… ]`;
+      const bodyEl = appendMsgShell(speaker, currentMode);
+      await speakLine(bodyEl, text, tts);   // gates next turn on text-end + audio-end
+      setSpeaking(speaker, false);
       transcript.push({ speaker, text });
-      appendMsg(speaker, currentMode, text);
+      if (abort) break;
       speaker = speaker === 'tsuki' ? 'selene' : 'tsuki';
     }
+    stopAudio();
     $('log-tag').textContent = abort ? '[ STOPPED ]' : '[ DONE ]';
     toggleRun(false);
     setStatus(abort ? `Stopped after ${transcript.length} turns.` : `Duet complete — ${transcript.length} turns of ${MODES[currentMode].label}.`, abort ? 'warn' : 'ok');
+  }
+
+  // ── VRAM overload protection (WaifuVoice telemetry) ──
+  function renderVram(r) {
+    const el = $('vram'); if (!el) return;
+    if (!r || !r.ok || !r.available) {
+      el.className = 'vram off'; el.textContent = 'VRAM —';
+      el.title = (r && (r.error || r.reason)) || 'WaifuVoice telemetry offline';
+      const bar = $('vram-bar'); if (bar) bar.style.width = '0%';
+      return;
+    }
+    el.className = 'vram' + (r.warning ? ' warn' : ' ok');
+    el.textContent = `VRAM ${r.used_gib}/${r.total_gib} GB`;
+    el.title = `${r.device_name || 'GPU'} · free ${r.free_gib} GB · voice needs ~${r.estimated_required_gib} GB`;
+    const bar = $('vram-bar'); if (bar && r.total_gib) bar.style.width = Math.min(100, Math.round((r.used_gib / r.total_gib) * 100)) + '%';
+  }
+  async function pollVram() {
+    if (!bridge) return;
+    renderVram(await bridge.vramTelemetry(settings.voiceURL));
+  }
+  async function preflightVram() {
+    const r = await bridge.vramTelemetry(settings.voiceURL);
+    renderVram(r);
+    if (r && r.ok && r.available && r.warning) {
+      setStatus(`⚠ Low VRAM: only ${r.free_gib} GB free, voice needs ~${r.estimated_required_gib} GB. A big LLM + voice may overload your GPU — use a smaller LLM or unload the voice model between runs.`, 'warn');
+      await new Promise(res => setTimeout(res, 1600));
+    }
   }
 
   // ── source loading ──
@@ -220,7 +318,11 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   }
 
   // ── wiring ──
-  function applySettingsToFields() { $('cfg-url').value = settings.url; $('cfg-model').value = settings.model; $('cfg-temp').value = settings.temp; $('cfg-key').value = settings.key; }
+  function applySettingsToFields() {
+    $('cfg-url').value = settings.url; $('cfg-model').value = settings.model;
+    $('cfg-temp').value = settings.temp; $('cfg-key').value = settings.key;
+    $('cfg-voice-url').value = settings.voiceURL; $('cfg-voice-on').checked = !!settings.voiceOn;
+  }
   function setActiveMode() {
     document.querySelectorAll('#modes .mode').forEach(m => m.classList.toggle('active', m.dataset.mode === currentMode));
     document.querySelector('.app').dataset.mode = currentMode || '';
@@ -228,14 +330,25 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
 
   $('gear').addEventListener('click', () => { $('settings').hidden = !$('settings').hidden; });
   $('cfg-save').addEventListener('click', () => {
-    settings = { url: $('cfg-url').value.trim() || DEFAULTS.url, model: $('cfg-model').value.trim(), temp: $('cfg-temp').value || 0.7, key: $('cfg-key').value.trim() || 'lm-studio' };
+    settings = {
+      url: $('cfg-url').value.trim() || DEFAULTS.url, model: $('cfg-model').value.trim(),
+      temp: $('cfg-temp').value || 0.7, key: $('cfg-key').value.trim() || 'lm-studio',
+      voiceURL: $('cfg-voice-url').value.trim() || DEFAULTS.voiceURL, voiceOn: $('cfg-voice-on').checked
+    };
     localStorage.setItem('duet-settings', JSON.stringify(settings));
     $('cfg-status').textContent = 'Saved ✓'; setTimeout(() => { $('cfg-status').textContent = ''; }, 1500);
-    checkConnection();
+    checkConnection(); pollVram();
+  });
+  $('btn-unload').addEventListener('click', async () => {
+    if (!bridge) { setStatus('Unload needs the Electron app.', 'warn'); return; }
+    setStatus('Unloading the voice model from VRAM…');
+    const r = await bridge.vramUnload(settings.voiceURL);
+    if (r.ok) { setStatus('Voice model unloaded — VRAM freed.', 'ok'); renderVram(r.telemetry || await bridge.vramTelemetry(settings.voiceURL)); }
+    else setStatus('Unload failed: ' + r.error, 'err');
   });
   $('btn-load').addEventListener('click', loadSource);
   $('btn-run').addEventListener('click', runDuet);
-  $('btn-stop').addEventListener('click', () => { abort = true; setStatus('Stopping after this turn…', 'warn'); });
+  $('btn-stop').addEventListener('click', () => { abort = true; stopAudio(); setStatus('Stopping…', 'warn'); });
   document.querySelectorAll('#modes .mode').forEach(m => m.addEventListener('click', () => {
     currentMode = m.dataset.mode; localStorage.setItem('duet-mode', currentMode); setActiveMode();
     setStatus(`Mode: ${MODES[currentMode].label}. ${source ? 'Press ▶ to start.' : 'Now load a source.'}`, 'ok');
@@ -244,11 +357,13 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   // ── init ──
   applySettingsToFields();
   setActiveMode();
-  $('log').innerHTML = '<div class="log-empty">🎭 Load a source, pick a mode, and Tsuki &amp; Selene will take turns —<br>one model, two souls, live from LM Studio.</div>';
+  $('log').innerHTML = '<div class="log-empty">🎭 Load a source, pick a mode — Tsuki &amp; Selene take turns,<br>one model + two voices, spoken aloud as they type.</div>';
   checkConnection();
-  if (bridge) { $('filebanner').hidden = true; }
-  else {
+  if (bridge) {
+    $('filebanner').hidden = true;
+    pollVram(); setInterval(pollVram, 6000);   // VRAM gauge
+  } else {
     $('filebanner').hidden = false;
-    $('filebanner').innerHTML = '⚠ <b>Browser preview.</b> File-path reading and image vision need the <b>Electron</b> app (<code>npm start</code>). You can still paste raw text and test the LLM here.';
+    $('filebanner').innerHTML = '⚠ <b>Browser preview.</b> File reads, voice synthesis, and VRAM telemetry need the <b>Electron</b> app (<code>npm start</code>) + a running WaifuVoice. Raw text + LLM still work here.';
   }
 })();
