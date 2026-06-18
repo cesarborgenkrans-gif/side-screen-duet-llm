@@ -21,6 +21,9 @@ text has finished typing **and** the audio has finished playing.
   two roles and frames the turns (Duel & Deep Dive also enforce staying on-thread).
 - **Watch them talk** — Tsuki & Selene animate, speak in distinct voices, and type their lines
   in a VS-Code-styled log.
+- **7 languages** — one switch retargets the **interface**, the **agents' reply language**, and
+  their **VoxCPM voices**: English · 日本語 · Svenska · 中文 · 한국어 · Deutsch · Français.
+  (Offline static dictionaries — no translation API, nothing to break.)
 
 ## Requirements
 - **Node.js** (Electron app).

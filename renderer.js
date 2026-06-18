@@ -14,6 +14,25 @@
   const setStatus = (m, k = '') => { $('status').textContent = m; $('status').className = 'status ' + k; };
   const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
+  // ── i18n (static dictionary; one switch retargets UI + LLM language + voice) ──
+  const LANGS = window.I18N_LANGS || [{ code: 'en', native: 'English', llm: 'English', voxcpm: 'English' }];
+  const DICT = window.I18N || { en: {} };
+  let lang = localStorage.getItem('duet-lang') || 'en';
+  if (!DICT[lang]) lang = 'en';
+  const langMeta = () => LANGS.find(l => l.code === lang) || LANGS[0];
+  function t(key, vars) {
+    let s = (DICT[lang] && DICT[lang][key]) || (DICT.en && DICT.en[key]) || key;
+    if (vars) for (const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+    return s;
+  }
+  const tag = key => `[ ${t(key)} ]`;
+  const modeName = k => t('m_' + k);
+  function applyStaticI18n() {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+  }
+
   // ── settings ──
   const DEFAULTS = { url: 'http://localhost:1234/v1', model: '', temp: 0.7, key: 'lm-studio',
                      voiceURL: 'http://localhost:3113', voiceOn: true };
@@ -141,10 +160,10 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
 
   async function checkConnection() {
     const el = $('conn');
-    el.className = 'conn checking'; el.textContent = '◐ checking…';
+    el.className = 'conn checking'; el.textContent = '◐ ' + t('conn_checking');
     const r = await llmModels();
     if (r.ok) { const m = r.models[0] || 'model loaded'; el.className = 'conn ok'; el.textContent = `● LM Studio · ${m}`; el.title = (r.models || []).join(', '); }
-    else { el.className = 'conn off'; el.textContent = '● not reachable'; el.title = r.error || ''; }
+    else { el.className = 'conn off'; el.textContent = '● ' + t('conn_off'); el.title = r.error || ''; }
   }
 
   // ── build the messages for one turn ──
@@ -155,7 +174,8 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   function buildMessages(speaker, modeKey, transcript, isFirst) {
     const mode = MODES[modeKey];
     const P = PERSONAS[speaker];
-    const system = P.sys + '\n\n' + mode.framing + '\n' + mode.role(speaker) + (mode.address || '') + SHARED_RULES;
+    const langDir = `\n\nLANGUAGE: Write your ENTIRE reply in ${langMeta().llm}. Keep your character, tone, and every rule above — but the words the reader sees must be in ${langMeta().llm}.`;
+    const system = P.sys + '\n\n' + mode.framing + '\n' + mode.role(speaker) + (mode.address || '') + SHARED_RULES + langDir;
 
     const head = `SOURCE MATERIAL (${source.name}):`;
     const tail = `\n\n— DISCUSSION SO FAR —\n${transcriptText(transcript)}\n\n`
@@ -248,8 +268,8 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   }
   async function runDuet() {
     if (running) return;
-    if (!currentMode) { setStatus('Pick a mode (Roast / Duel / Skit / Deep Dive) first.', 'warn'); return; }
-    if (!source) { setStatus('Load a source first — paste a file path or text, then “Load source”.', 'warn'); return; }
+    if (!currentMode) { setStatus(t('st_pickmode'), 'warn'); return; }
+    if (!source) { setStatus(t('st_loadsrc'), 'warn'); return; }
     abort = false; toggleRun(true); clearLog();
     const voice = bridge && settings.voiceOn;
     if (voice) await preflightVram();
@@ -259,23 +279,23 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     for (let i = 0; i < turns && !abort; i++) {
       const name = PERSONAS[speaker].name;
       setSpeaking(speaker, true);
-      $('log-tag').textContent = `[ ${name} composing… ]`;
-      setStatus(`${name} is composing turn ${i + 1}/${turns}…`);
+      $('log-tag').textContent = '[ ' + t('w_composing', { name }) + ' ]';
+      setStatus(t('st_composing', { name, i: i + 1, n: turns }));
       const r = await llmChat(buildMessages(speaker, currentMode, transcript, i === 0));
       if (abort) { setSpeaking(speaker, false); break; }
-      if (!r.ok) { setSpeaking(speaker, false); setStatus('LLM error: ' + r.error, 'err'); $('log-tag').textContent = '[ ERROR ]'; toggleRun(false); return; }
+      if (!r.ok) { setSpeaking(speaker, false); setStatus(t('st_llmerr', { e: r.error }), 'err'); $('log-tag').textContent = tag('tag_error'); toggleRun(false); return; }
       const text = (r.text || '').trim() || '…';
 
-      // synthesize this line (per-mascot voice) before revealing/playing
+      // synthesize this line (per-mascot voice, selected language) before revealing/playing
       let tts = null;
       if (voice) {
-        $('log-tag').textContent = `[ ${name} finding her voice… ]`;
-        tts = await bridge.ttsGenerate({ baseURL: settings.voiceURL, text, voice_design: VOICE_DESIGN[speaker], seed: VOICE_SEED[speaker] });
-        if (!tts.ok) setStatus('Voice unavailable (continuing text-only): ' + tts.error, 'warn');
+        $('log-tag').textContent = '[ ' + t('w_voicing', { name }) + ' ]';
+        tts = await bridge.ttsGenerate({ baseURL: settings.voiceURL, text, voice_design: VOICE_DESIGN[speaker], seed: VOICE_SEED[speaker], language: langMeta().voxcpm });
+        if (!tts.ok) setStatus(t('st_voiceerr', { e: tts.error }), 'warn');
       }
       if (abort) { setSpeaking(speaker, false); break; }
 
-      $('log-tag').textContent = `[ ${name} speaking… ]`;
+      $('log-tag').textContent = '[ ' + t('w_speaking', { name }) + ' ]';
       const bodyEl = appendMsgShell(speaker, currentMode);
       await speakLine(bodyEl, text, tts);   // gates next turn on text-end + audio-end
       setSpeaking(speaker, false);
@@ -284,9 +304,9 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
       speaker = speaker === 'tsuki' ? 'selene' : 'tsuki';
     }
     stopAudio();
-    $('log-tag').textContent = abort ? '[ STOPPED ]' : '[ DONE ]';
+    $('log-tag').textContent = abort ? tag('tag_stopped') : tag('tag_done');
     toggleRun(false);
-    setStatus(abort ? `Stopped after ${transcript.length} turns.` : `Duet complete — ${transcript.length} turns of ${MODES[currentMode].label}.`, abort ? 'warn' : 'ok');
+    setStatus(abort ? t('st_stopped', { n: transcript.length }) : t('st_done', { n: transcript.length, mode: modeName(currentMode) }), abort ? 'warn' : 'ok');
   }
 
   // ── VRAM overload protection (WaifuVoice telemetry) ──
@@ -319,14 +339,14 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   // ── source loading ──
   async function loadSource() {
     const raw = $('src-input').value;
-    if (!raw.trim()) { setStatus('Paste a "Copy as path" file path or some text first.', 'warn'); return; }
+    if (!raw.trim()) { setStatus(t('st_loadsrc'), 'warn'); return; }
     if (bridge) {
       const r = await bridge.readSource(raw);
-      if (!r.ok) { setStatus(r.error, 'err'); $('src-chip').textContent = 'load failed'; $('src-chip').className = 'src-chip'; return; }
+      if (!r.ok) { setStatus(r.error, 'err'); $('src-chip').textContent = t('chipnone'); $('src-chip').className = 'src-chip'; return; }
       source = r;
-      if (r.kind === 'image') { $('src-chip').textContent = `🖼️ image: ${r.name} (${Math.round(r.bytes / 1024)} KB) — needs a vision model`; $('src-chip').className = 'src-chip img'; }
-      else { $('src-chip').textContent = `📄 ${r.name} · ${r.text.length} chars${r.truncated ? ' (truncated)' : ''}`; $('src-chip').className = 'src-chip ok'; }
-      setStatus('Source loaded. Pick a mode and start the duet.', 'ok');
+      if (r.kind === 'image') { $('src-chip').textContent = t('chip_img', { name: r.name, kb: Math.round(r.bytes / 1024) }); $('src-chip').className = 'src-chip img'; }
+      else { $('src-chip').textContent = t('chip_text', { name: r.name, n: r.text.length }) + (r.truncated ? ' …' : ''); $('src-chip').className = 'src-chip ok'; }
+      setStatus(t('st_srcloaded'), 'ok');
     } else {
       // browser: no disk access — treat the box as raw text
       source = { kind: 'text', name: '(pasted text)', text: raw.trim(), truncated: false };
@@ -363,8 +383,28 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   $('btn-stop').addEventListener('click', () => { abort = true; stopAudio(); setStatus('Stopping…', 'warn'); });
   document.querySelectorAll('#modes .mode').forEach(m => m.addEventListener('click', () => {
     currentMode = m.dataset.mode; localStorage.setItem('duet-mode', currentMode); setActiveMode();
-    setStatus(`Mode: ${MODES[currentMode].label}. ${source ? 'Press ▶ to start.' : 'Now load a source.'}`, 'ok');
+    setStatus(t('st_modeset', { mode: modeName(currentMode) }), 'ok');
   }));
+
+  // ── language selector ──
+  function renderEmptyLog() {
+    if (!$('log').querySelector('.msg')) $('log').innerHTML = `<div class="log-empty">🎭 ${esc(t('empty'))}</div>`;
+  }
+  function refreshDynamicI18n() {
+    if (!running) $('log-tag').textContent = tag('tag_idle');
+    if (!source) $('src-chip').textContent = t('chipnone');
+    renderEmptyLog();
+    checkConnection();
+  }
+  (function buildLangSelect() {
+    const sel = $('lang-select');
+    sel.innerHTML = LANGS.map(l => `<option value="${l.code}">${l.native}</option>`).join('');
+    sel.value = lang;
+    sel.addEventListener('change', e => {
+      lang = e.target.value; localStorage.setItem('duet-lang', lang);
+      applyStaticI18n(); refreshDynamicI18n();
+    });
+  })();
 
   // ── credits (open in external browser) ──
   document.querySelectorAll('.credit-link').forEach(a => a.addEventListener('click', () => {
@@ -373,9 +413,12 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   }));
 
   // ── init ──
+  applyStaticI18n();
   applySettingsToFields();
   setActiveMode();
-  $('log').innerHTML = '<div class="log-empty">🎭 Load a source, pick a mode — Tsuki &amp; Selene take turns,<br>one model + two voices, spoken aloud as they type.</div>';
+  $('log-tag').textContent = tag('tag_idle');
+  $('src-chip').textContent = t('chipnone');
+  $('log').innerHTML = `<div class="log-empty">🎭 ${esc(t('empty'))}</div>`;
   checkConnection();
   if (bridge) {
     $('filebanner').hidden = true;

@@ -163,6 +163,11 @@ button:disabled{opacity:.5;cursor:wait;}
 .status.warn{color:#ffe57f;}
 .status.err{color:#ff8f8f;}
 
+/* language selector */
+.lang-select{font-family:var(--ui);font-size:1.05rem;background:rgba(0,0,0,.3);
+  border:1px solid var(--border);color:var(--text);border-radius:99px;padding:7px 12px;}
+.lang-select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 10px rgba(224,64,251,.25);}
+
 /* VRAM gauge chip (WaifuVoice telemetry) */
 .vram{font-family:var(--mono);font-size:1.05rem;letter-spacing:.03em;padding:8px 12px;
   border-radius:99px;border:1px solid var(--border);white-space:nowrap;}
