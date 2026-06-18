@@ -53,7 +53,13 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   };
   const SHARED_RULES =
     `\n\nRULES: Stay fully in your OWN distinct, elegant character voice (the portal mockup is your north star — curious, timeless, quirky, a little Japanese). BUT the substance must be genuinely correct and grounded in your ROLE + TASK and the SOURCE; never let the persona make you inaccurate, vague, or generic. `
-    + `Reply ONLY as your character, in first person, in **1–3 SHORT sentences (~45 words total, hard max)**. Your words are SPOKEN ALOUD, so keep each sentence brief and natural to say. Address your partner by name. No markdown headings; no stage directions beyond a tiny inline emote.`;
+    + `Reply ONLY as your character, in first person, in **1–3 SHORT sentences (~45 words total, hard max)**. Your words are SPOKEN ALOUD, so keep each sentence brief and natural to say. No markdown headings; no stage directions beyond a tiny inline emote.`;
+
+  // Who the speaker addresses. Duel/Skit = each other; Roast/Deep Dive = the user.
+  const ADDRESS_PARTNER = ` Address your partner by name (Tsuki-chan / Selene-chan) as you engage them.`;
+  const ADDRESS_USER =
+    ` AUDIENCE (overrides your usual habit of naming your partner): you speak TO THE USER who provided the source, TOGETHER with your partner as a duo — not to each other. `
+    + `Do NOT open with or address your partner by name ("Tsuki-chan" / "Selene-chan"); aim your words outward at the user. You may build on your partner's point, but the listener is the user.`;
 
   // ── modes (define the two ROLES + the task framing) ──
   // Each turn, the speaker is reminded to engage the partner's LAST point.
@@ -71,8 +77,9 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   const MODES = {
     roast: {
       label: 'Roast', first: 'tsuki',
-      framing: 'You are both doing a playful COMEDY ROAST of the SOURCE material. Witty, exaggerated, savage-but-affectionate. Roast the ideas/content, never the user.',
-      role: () => `Land a genuinely funny, SPECIFIC burn about something real in the source, and one-up your partner's last jab.`,
+      framing: 'You are BOTH roasting the USER over their SOURCE — a playful tag-team comedy roast aimed at the user and their material. Witty, exaggerated, savage-but-affectionate. Gang up together; do NOT roast each other.',
+      role: () => `Land a genuinely funny, SPECIFIC burn about something real in the user's source, piling onto your partner's previous jab — you two are a duo roasting the user, not rivals.`,
+      address: ADDRESS_USER,
       roleLabel: () => 'ROASTER'
     },
     duel: {
@@ -82,12 +89,14 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
         ? `Your role: DEFENDER — argue rigorously for the material's thesis/quality, cite its real strengths, and rebut the critic's exact last objection with substance.`
         : `Your role: CRITIC — find genuine flaws, gaps, weak evidence, or logical holes and press them hard; first answer the defender's last rebuttal, then raise the next point. Fair, but incisive.`)
         + STAY_ON_THREAD,
+      address: ADDRESS_PARTNER,
       roleLabel: sp => sp === 'selene' ? 'DEFENDER' : 'CRITIC'
     },
     skit: {
       label: 'Comedy Skit', first: 'tsuki',
       framing: 'You are co-performing a short COMEDY SKIT inspired by the SOURCE. Build one tiny scene together, riffing line by line, tying jokes to REAL details from the source.',
       role: () => `Continue the skit with one or two funny in-character lines that advance the bit and reference real content.`,
+      address: ADDRESS_PARTNER,
       roleLabel: () => 'PERFORMER'
     },
     deepdive: {
@@ -97,6 +106,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
         ? `Your role: SCOUT — give the big-picture answer: what the source is really asking or claiming, the key correct points, and the concrete path forward (actual steps, names, configs).`
         : `Your role: MYSTIC — add the hidden layer WITH SUBSTANCE: edge cases, gotchas, prerequisites, risks, and corrections your partner missed. Concrete specifics, not vibes.`)
         + STAY_ON_THREAD + SUBSTANCE_FIRST,
+      address: ADDRESS_USER,
       roleLabel: sp => sp === 'tsuki' ? 'SCOUT' : 'MYSTIC'
     }
   };
@@ -145,7 +155,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   function buildMessages(speaker, modeKey, transcript, isFirst) {
     const mode = MODES[modeKey];
     const P = PERSONAS[speaker];
-    const system = P.sys + '\n\n' + mode.framing + '\n' + mode.role(speaker) + SHARED_RULES;
+    const system = P.sys + '\n\n' + mode.framing + '\n' + mode.role(speaker) + (mode.address || '') + SHARED_RULES;
 
     const head = `SOURCE MATERIAL (${source.name}):`;
     const tail = `\n\n— DISCUSSION SO FAR —\n${transcriptText(transcript)}\n\n`
@@ -301,7 +311,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     const r = await bridge.vramTelemetry(settings.voiceURL);
     renderVram(r);
     if (r && r.ok && r.available && r.warning) {
-      setStatus(`⚠ Low VRAM: only ${r.free_gib} GB free, voice needs ~${r.estimated_required_gib} GB. A big LLM + voice may overload your GPU — use a smaller LLM or unload the voice model between runs.`, 'warn');
+      setStatus(`⚠ Low VRAM: only ${r.free_gib} GB free, voice needs ~${r.estimated_required_gib} GB. A big LLM + voice may overload your GPU — consider a smaller/quantized LLM.`, 'warn');
       await new Promise(res => setTimeout(res, 1600));
     }
   }
@@ -347,13 +357,6 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     localStorage.setItem('duet-settings', JSON.stringify(settings));
     $('cfg-status').textContent = 'Saved ✓'; setTimeout(() => { $('cfg-status').textContent = ''; }, 1500);
     checkConnection(); pollVram();
-  });
-  $('btn-unload').addEventListener('click', async () => {
-    if (!bridge) { setStatus('Unload needs the Electron app.', 'warn'); return; }
-    setStatus('Unloading the voice model from VRAM…');
-    const r = await bridge.vramUnload(settings.voiceURL);
-    if (r.ok) { setStatus('Voice model unloaded — VRAM freed.', 'ok'); renderVram(r.telemetry || await bridge.vramTelemetry(settings.voiceURL)); }
-    else setStatus('Unload failed: ' + r.error, 'err');
   });
   $('btn-load').addEventListener('click', loadSource);
   $('btn-run').addEventListener('click', runDuet);

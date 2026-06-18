@@ -143,14 +143,6 @@ ipcMain.handle('vram-telemetry', async (_e, baseURL) => {
     return { ok: true, ...(await res.json()) };
   } catch (e) { return { ok: false, error: e.message }; }
 });
-ipcMain.handle('vram-unload', async (_e, baseURL) => {
-  try {
-    const res = await fetch(`${trimU(baseURL)}/api/vram/unload`, { method: 'POST' });
-    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
-    return { ok: true, ...(await res.json()) };
-  } catch (e) { return { ok: false, error: e.message }; }
-});
-
 // ── open a credit link in the external browser ──
 ipcMain.handle('open-url', async (_e, url) => {
   if (!/^https?:\/\//.test(url)) return { ok: false, error: 'invalid URL' };

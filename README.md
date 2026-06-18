@@ -41,15 +41,15 @@ Set the LM Studio + WaifuVoice URLs (and toggle voice) in ⚙ settings. Press **
 - **Turn-gating:** per turn → LLM line → WaifuVoice synth → typewriter + audio play together →
   next turn only fires after text-end **and** audio-end.
 - **Distinct voices:** Tsuki and Selene each carry their own `voice_design` prompt.
-- **VRAM safety:** a live gauge polls WaifuVoice's `/api/vram`, warns before a run if a big LLM +
-  voice model won't fit your GPU, and offers one-tap **unload voice** to free VRAM.
+- **VRAM safety:** a live gauge polls WaifuVoice's `/api/vram` and warns before a run if a big LLM +
+  voice model won't fit your GPU.
 
 ## Credits
 - **Concept, design & development:** **Cesar Borgenkrans** — conceptual author and developer.
 - **Part of [SparkleSnap](https://sparklesnap.dev)** · [github.com/cesarborgenkrans-gif](https://github.com/cesarborgenkrans-gif)
 - **Characters:** Tsuki Hoshi & Selene Moonlight (SparkleSnap).
 - **Code co-author:** **Claude Opus 4.8-senpai** 🤖
-- **Voice:** [WaifuVoice](https://github.com/cesarborgenkrans-gif) (VoxCPM).
+- **Voice:** [WaifuVoice](https://github.com/cesarborgenkrans-gif/WaifuVoice) (VoxCPM).
 
 © 2026 Cesar Borgenkrans / SparkleSnap. Original concept & characters are the author's
 intellectual property. **Private repository — all rights reserved.** Do not redistribute the
