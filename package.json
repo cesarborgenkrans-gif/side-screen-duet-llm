@@ -1,0 +1,13 @@
+{
+  "name": "duet-electron",
+  "version": "1.0.0",
+  "description": "Duet — two-persona (Tsuki & Selene) live LLM orchestration dashboard (1440x2560 portrait panel)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --windowed"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

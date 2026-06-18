@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duet · Tsuki &amp; Selene</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="app">
+
+    <!-- ══ TOP BAR ══ -->
+    <header class="topbar">
+      <div class="brand">🎭 DUET <span>// tsuki × selene</span></div>
+      <div class="right">
+        <span id="conn" class="conn checking" title="">◐ checking…</span>
+        <button id="gear" class="ghost" title="LM Studio settings">⚙ settings</button>
+      </div>
+    </header>
+
+    <div id="filebanner" class="filebanner" hidden></div>
+
+    <section id="settings" class="settings" hidden>
+      <label>LM Studio Base URL<input id="cfg-url" type="text" placeholder="http://localhost:1234/v1"></label>
+      <label>Model (optional)<input id="cfg-model" type="text" placeholder="(uses the loaded model)"></label>
+      <label>Temperature<input id="cfg-temp" type="number" min="0" max="2" step="0.1" value="0.7"></label>
+      <label>API Key (any, for local)<input id="cfg-key" type="text" placeholder="lm-studio"></label>
+      <div class="row-actions">
+        <button id="cfg-save" class="primary">Save &amp; test connection</button>
+        <span id="cfg-status" class="muted"></span>
+      </div>
+    </section>
+
+    <!-- ══ MASCOT STAGE ══ -->
+    <section class="stage">
+      <div class="mascot tsuki" id="tsuki-stage">
+        <div class="bubble tsuki-bubble" id="tsuki-bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="sprite" id="tsuki-sprite"></div>
+        <div class="mascot-name tsuki-name">🛰️ TSUKI</div>
+      </div>
+      <div class="vs">⟷</div>
+      <div class="mascot selene" id="selene-stage">
+        <div class="bubble selene-bubble" id="selene-bubble"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="sprite" id="selene-sprite"></div>
+        <div class="mascot-name selene-name">🌙 SELENE</div>
+      </div>
+    </section>
+
+    <!-- ══ DISCUSSION LOG (VS Code editor styled) ══ -->
+    <section class="logwrap">
+      <div class="log-head">
+        <span>&gt; ORCHESTRATION_LOG.md</span>
+        <span class="log-tag" id="log-tag">[ IDLE ]</span>
+      </div>
+      <div class="log" id="log"></div>
+    </section>
+
+    <!-- ══ SOURCE + MODES + CONTROLS ══ -->
+    <section class="console">
+      <label class="src-label">SOURCE — paste a "Copy as path" file (doc / code / image) or raw text</label>
+      <textarea id="src-input" class="src-input" rows="2" placeholder='e.g.  "D:\path\to\file.md"   or paste text directly…'></textarea>
+      <div class="src-row">
+        <button id="btn-load" class="ghost">📎 Load source</button>
+        <span id="src-chip" class="src-chip">no source loaded</span>
+      </div>
+
+      <div class="modes" id="modes">
+        <button class="mode" data-mode="roast">🔥 Roast</button>
+        <button class="mode" data-mode="duel">⚖️ Academic Duel</button>
+        <button class="mode" data-mode="skit">🎬 Comedy Skit</button>
+        <button class="mode" data-mode="deepdive">🔍 Deep Dive</button>
+      </div>
+
+      <div class="run-row">
+        <label class="turns-label">turns
+          <input id="turns" type="number" min="2" max="12" step="2" value="6">
+        </label>
+        <button id="btn-run" class="primary big">▶ Start the duet</button>
+        <button id="btn-stop" class="ghost" hidden>■ Stop</button>
+      </div>
+
+      <div class="status-bar">
+        <span id="status" class="status"></span>
+      </div>
+    </section>
+
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
