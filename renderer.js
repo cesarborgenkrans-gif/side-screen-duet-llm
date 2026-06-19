@@ -35,7 +35,14 @@
 
   // ── settings ──
   const DEFAULTS = { url: 'http://localhost:1234/v1', model: '', temp: 0.7, key: 'lm-studio',
-                     voiceURL: 'http://localhost:3113', voiceOn: true };
+                     voiceURL: 'http://localhost:3113', voiceOn: true, provider: 'lmstudio' };
+  // LLM provider presets — all OpenAI-compatible, so only the base URL (and key/model hints) differ.
+  const PROVIDERS = {
+    lmstudio:   { label: 'LM Studio',  url: 'http://localhost:1234/v1' },
+    ollama:     { label: 'Ollama',     url: 'http://localhost:11434/v1', modelHint: 'e.g. llama3.2 (must be pulled)' },
+    openrouter: { label: 'OpenRouter', url: 'https://openrouter.ai/api/v1', keyHint: 'OpenRouter API key', modelHint: 'e.g. anthropic/claude-3.7-sonnet' },
+    custom:     { label: 'Custom' },
+  };
   const loadSettings = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('duet-settings') || '{}') }; } catch { return { ...DEFAULTS }; } };
   let settings = loadSettings();
   const trimURL = u => (u || DEFAULTS.url).replace(/\/+$/, '');
@@ -164,7 +171,8 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     const el = $('conn');
     el.className = 'conn checking'; el.textContent = '◐ ' + t('conn_checking');
     const r = await llmModels();
-    if (r.ok) { const m = r.models[0] || 'model loaded'; el.className = 'conn ok'; el.textContent = `● LM Studio · ${m}`; el.title = (r.models || []).join(', '); }
+    const prov = (PROVIDERS[settings.provider] || {}).label || 'LLM';
+    if (r.ok) { const m = r.models[0] || 'model loaded'; el.className = 'conn ok'; el.textContent = `● ${prov} · ${m}`; el.title = (r.models || []).join(', '); }
     else { el.className = 'conn off'; el.textContent = '● ' + t('conn_off'); el.title = r.error || ''; }
   }
 
@@ -360,6 +368,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
 
   // ── wiring ──
   function applySettingsToFields() {
+    $('cfg-provider').value = settings.provider || 'lmstudio';
     $('cfg-url').value = settings.url; $('cfg-model').value = settings.model;
     $('cfg-temp').value = settings.temp; $('cfg-key').value = settings.key;
     $('cfg-voice-url').value = settings.voiceURL; $('cfg-voice-on').checked = !!settings.voiceOn;
@@ -370,8 +379,16 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   }
 
   $('gear').addEventListener('click', () => { $('settings').hidden = !$('settings').hidden; });
+  // provider preset → prefill the base URL + hint the key/model fields (core LLM code untouched)
+  $('cfg-provider').addEventListener('change', e => {
+    const p = PROVIDERS[e.target.value] || {};
+    if (p.url) $('cfg-url').value = p.url;
+    $('cfg-key').placeholder = p.keyHint || 'lm-studio';
+    $('cfg-model').placeholder = p.modelHint || '(uses the loaded model)';
+  });
   $('cfg-save').addEventListener('click', () => {
     settings = {
+      provider: $('cfg-provider').value,
       url: $('cfg-url').value.trim() || DEFAULTS.url, model: $('cfg-model').value.trim(),
       temp: $('cfg-temp').value || 0.7, key: $('cfg-key').value.trim() || 'lm-studio',
       voiceURL: $('cfg-voice-url').value.trim() || DEFAULTS.voiceURL, voiceOn: $('cfg-voice-on').checked

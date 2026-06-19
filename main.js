@@ -92,9 +92,11 @@ ipcMain.handle('llm-chat', async (_e, opts) => {
   const { baseURL, apiKey, model, temperature, messages } = opts || {};
   try {
     const url = `${(baseURL || 'http://localhost:1234/v1').replace(/\/+$/, '')}/chat/completions`;
+    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey || 'lm-studio'}` };
+    if (/openrouter\.ai/i.test(url)) { headers['HTTP-Referer'] = 'https://sparklesnap.dev'; headers['X-Title'] = 'SparkleSnap Duet'; }
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey || 'lm-studio'}` },
+      headers,
       body: JSON.stringify({ model: model || 'local-model', messages, temperature: typeof temperature === 'number' ? temperature : 0.7,
         frequency_penalty: 0.6, presence_penalty: 0.4, stream: false })
     });

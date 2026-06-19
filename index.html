@@ -25,6 +25,14 @@
     <div id="filebanner" class="filebanner" hidden></div>
 
     <section id="settings" class="settings" hidden>
+      <label><span data-i18n="provider">LLM provider</span>
+        <select id="cfg-provider">
+          <option value="lmstudio">LM Studio (local)</option>
+          <option value="ollama">Ollama (local)</option>
+          <option value="openrouter">OpenRouter (cloud)</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
       <label><span data-i18n="lmurl">LM Studio Base URL</span><input id="cfg-url" type="text" placeholder="http://localhost:1234/v1"></label>
       <label><span data-i18n="model">Model (optional)</span><input id="cfg-model" type="text" placeholder="(uses the loaded model)"></label>
       <label><span data-i18n="temp">Temperature</span><input id="cfg-temp" type="number" min="0" max="2" step="0.1" value="0.7"></label>

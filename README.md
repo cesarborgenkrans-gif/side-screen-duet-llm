@@ -28,8 +28,13 @@ text has finished typing **and** the audio has finished playing.
 
 ## Requirements
 - **Node.js** (Electron app).
-- **[LM Studio](https://lmstudio.ai)** — start the local server and load one model. For image
-  sources, load a **vision** model.
+- **An OpenAI-compatible LLM.** Pick a **provider** in ⚙ settings — it just pre-fills the base URL:
+  - **LM Studio** (local, default) — start its server and load one model.
+  - **Ollama** (local) — `http://localhost:11434/v1`; model = a pulled model (e.g. `llama3.2`).
+  - **OpenRouter** (cloud) — `https://openrouter.ai/api/v1` + your API key; model e.g.
+    `anthropic/claude-3.7-sonnet`. (Cloud = your source text/images leave the machine, and it costs per call.)
+  - **Custom** — any OpenAI-compatible endpoint.
+  For image sources, the chosen model must be **vision**-capable.
 - **WaifuVoice** (VoxCPM) running locally (default `http://localhost:3113`) for voice. Without it,
   Duet **falls back to text-only** automatically.
 
