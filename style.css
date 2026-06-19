@@ -24,12 +24,12 @@ textarea,input{cursor:url('assets/cursor-active.svg') 8 8, text;}
   padding:clamp(16px,2.4vmin,40px);gap:clamp(10px,1.6vmin,20px);}
 
 /* top bar */
-.topbar{display:flex;justify-content:space-between;align-items:center;
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px 14px;flex-wrap:wrap;
   border-bottom:1px solid var(--border);padding-bottom:12px;flex-shrink:0;}
-.brand{font-family:var(--ui);font-weight:700;letter-spacing:.12em;
+.brand{font-family:var(--ui);font-weight:700;letter-spacing:.12em;white-space:nowrap;flex-shrink:0;
   font-size:clamp(1rem,1.7vw,1.5rem);color:var(--purple);text-shadow:0 0 14px rgba(224,64,251,.4);}
 .brand span{color:var(--dim);font-weight:400;}
-.right{display:flex;align-items:center;gap:12px;}
+.right{display:flex;align-items:center;gap:12px;min-width:0;flex-wrap:wrap;justify-content:flex-end;}
 button{font-family:var(--ui);border-radius:10px;transition:all .2s;}
 .ghost{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);padding:13px 20px;font-size:1.82rem;}
 .ghost:hover{border-color:var(--border-hot);color:var(--text);}
@@ -38,7 +38,8 @@ button{font-family:var(--ui);border-radius:10px;transition:all .2s;}
 .primary:hover{box-shadow:0 0 22px rgba(224,64,251,.3);transform:translateY(-1px);}
 button:disabled{opacity:.5;cursor:wait;}
 
-.conn{font-family:var(--mono);font-size:1.1rem;letter-spacing:.03em;padding:8px 14px;border-radius:99px;border:1px solid var(--border);white-space:nowrap;}
+.conn{font-family:var(--mono);font-size:1.1rem;letter-spacing:.03em;padding:8px 14px;border-radius:99px;border:1px solid var(--border);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:clamp(160px,26vw,380px);flex-shrink:1;min-width:0;}
 .conn.checking{color:var(--muted);}
 .conn.ok{color:var(--selene);border-color:rgba(24,255,255,.5);box-shadow:0 0 14px rgba(24,255,255,.2);}
 .conn.off{color:#ff8f8f;border-color:rgba(255,143,143,.4);}
@@ -164,9 +165,12 @@ button:disabled{opacity:.5;cursor:wait;}
 .status.err{color:#ff8f8f;}
 
 /* language selector */
-.lang-select{font-family:var(--ui);font-size:1.05rem;background:rgba(0,0,0,.3);
-  border:1px solid var(--border);color:var(--text);border-radius:99px;padding:7px 12px;}
+.lang-select{font-family:var(--ui);font-size:1.05rem;background:rgba(20,9,38,.95);
+  border:1px solid var(--border);color:var(--text);border-radius:99px;padding:7px 12px;flex-shrink:0;}
 .lang-select:focus{outline:none;border-color:var(--purple);box-shadow:0 0 10px rgba(224,64,251,.25);}
+/* dropdown popup options — solid dark bg + light text so they don't melt into the page */
+.lang-select option{background:#160a26;color:var(--text);}
+.lang-select option:checked{background:#3a1d5c;color:#fff;}
 
 /* VRAM gauge chip (WaifuVoice telemetry) */
 .vram{font-family:var(--mono);font-size:1.05rem;letter-spacing:.03em;padding:8px 12px;
