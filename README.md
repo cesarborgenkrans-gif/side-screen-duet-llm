@@ -1,71 +1,112 @@
+# Duet - Side-Screen LLM Dialogue
+
 ```text
  /\_/\   /\_/\
-( o.o ) ( -.- )   * DUET *
- > ^ <   > ^ <    two souls, one model, spoken aloud
+( o.o ) ( -.- )   DUET
+ > ^ <   > ^ <    one model, two voices, one shared thread
 ```
 
-# Duet — 5-inch Two-Persona LLM Dialogue (voice edition)
+Duet is a compact Electron dashboard for a small secondary display beside your
+main screen. Tsuki Hoshi and Selene Moonlight take turns analyzing a source with
+one OpenAI-compatible model, while WaifuVoice can speak each line as it appears.
 
-A glanceable 5-inch dashboard (1440×2560 portrait, Electron) where **two characters —
-Tsuki 🛰️ and Selene 🌙 — take turns dissecting whatever you give them**, out loud.
+The character layer keeps the panel lively. The useful work comes from the
+selected mode, which gives each speaker a concrete role and keeps the dialogue
+on task.
 
-It's a *single-actor theatre*: **one** LM Studio model plays both personas, alternating over a
-shared, expanding transcript. The persona/lingo is theatre; the substance comes entirely from
-the **role + task** the chosen mode assigns. Each line is synthesized to speech on the fly
-(via WaifuVoice), revealed novel-style as it's spoken, and the next turn waits until **both** the
-text has finished typing **and** the audio has finished playing.
+## What It Does
 
-## What it does
-- **Drop a source** — paste a "Copy as path" file (doc / code / image-with-vision) or raw text.
-- **Pick a mode** — 🔥 Roast · ⚖️ Academic Duel · 🎬 Comedy Skit · 🔍 Deep Dive. Each assigns the
-  two roles and frames the turns (Duel & Deep Dive also enforce staying on-thread).
-- **Watch them talk** — Tsuki & Selene animate, speak in distinct voices, and type their lines
-  in a VS-Code-styled log.
-- **10 languages** — one switch retargets the **interface**, the **agents' reply language**, and
-  their **VoxCPM voices**: English · 日本語 · Svenska · 中文 · 한국어 · Deutsch · Français ·
-  Español · Italiano · Português. (Offline static dictionaries — no translation API, nothing to
-  break. Method + how-to: [TRANSLATION.md](TRANSLATION.md).)
+- **Loads a source:** paste raw text or a Windows "Copy as path" file reference.
+  Text files become source material; image files can be sent to vision-capable
+  models.
+- **Runs two roles on one model:** Tsuki and Selene alternate over the same
+  transcript so each answer can build on the previous one.
+- **Offers focused modes:** Roast, Academic Duel, Comedy Skit, and Deep Dive.
+- **Speaks when WaifuVoice is available:** each character has a distinct voice
+  prompt; without voice, Duet stays usable as text.
+- **Waits between turns:** the next model call starts after the current text and
+  optional audio finish.
+- **Supports ten languages:** one selector controls UI text, reply language, and
+  VoxCPM voice language.
 
 ## Requirements
-- **Node.js** (Electron app).
-- **An OpenAI-compatible LLM.** Pick a **provider** in ⚙ settings — it just pre-fills the base URL:
-  - **LM Studio** (local, default) — start its server and load one model.
-  - **Ollama** (local) — `http://localhost:11434/v1`; model = a pulled model (e.g. `llama3.2`).
-  - **OpenRouter** (cloud) — `https://openrouter.ai/api/v1` + your API key; model e.g.
-    `anthropic/claude-3.7-sonnet`. (Cloud = your source text/images leave the machine, and it costs per call.)
-  - **Custom** — any OpenAI-compatible endpoint.
-  For image sources, the chosen model must be **vision**-capable.
-- **WaifuVoice** (VoxCPM) running locally (default `http://localhost:3113`) for voice. Without it,
-  Duet **falls back to text-only** automatically.
+
+- Node.js for Electron.
+- An OpenAI-compatible chat endpoint:
+  - LM Studio at `http://localhost:1234/v1`
+  - Ollama at `http://localhost:11434/v1`
+  - OpenRouter at `https://openrouter.ai/api/v1`
+  - any compatible custom endpoint
+- Optional WaifuVoice/VoxCPM at `http://localhost:3113` for spoken dialogue.
+
+For image sources, choose a vision-capable model. Local LM Studio, Ollama, and
+WaifuVoice runs keep source material on your machine. A cloud endpoint receives
+the text or image content you submit and may cost money per call.
 
 ## Run
+
 ```bash
 npm install
-npm start            # full-screen on the 5-inch panel
-npm run dev          # normal resizable window
+npm start
 ```
-Set the LM Studio + WaifuVoice URLs (and toggle voice) in ⚙ settings. Press **Esc** to quit.
 
-## How it works
-- **Turn-gating:** per turn → LLM line → WaifuVoice synth → typewriter + audio play together →
-  next turn only fires after text-end **and** audio-end.
-- **Distinct voices:** Tsuki and Selene each carry their own `voice_design` prompt.
-- **VRAM safety:** a live gauge polls WaifuVoice's `/api/vram` and warns before a run if a big LLM +
-  voice model won't fit your GPU.
+`npm start` opens the locked side-screen dashboard window. Press `Esc` to quit.
+
+For development:
+
+```bash
+npm run dev
+```
+
+## Use
+
+1. Start your LLM server or prepare an OpenRouter/custom key.
+2. Start WaifuVoice if you want spoken dialogue.
+3. Open settings and choose provider, model, temperature, API key if needed, and
+   WaifuVoice URL.
+4. Paste a source, pick a mode, and start the exchange.
+
+Modes:
+
+- **Roast:** playful critique with useful fixes underneath the performance.
+- **Academic Duel:** structured claims, counterclaims, evidence, and correction.
+- **Comedy Skit:** lighter dialogue for ideation and explanation.
+- **Deep Dive:** a grounded analysis loop that stays close to the source.
+
+## Files And Privacy
+
+Keep the app source, `i18n.js`, `TRANSLATION.md`, `assets/`, `souls/`,
+`personas/`, `package-lock.json`, `LICENSE`, and this README together for a
+standalone copy.
+
+Git ignores generated local files such as `node_modules/`,
+`displays-detected.json`, `.env*`, `*.local*`, secrets, keys, logs, caches, and
+editor folders. Do not send private source material to a cloud provider unless
+that is intentional.
 
 ## Credits
-- **Concept, design & development:** **Cesar Borgenkrans** — conceptual author and developer.
-- **Part of [SparkleSnap](https://sparklesnap.dev)** · [github.com/cesarborgenkrans-gif](https://github.com/cesarborgenkrans-gif)
-- **Characters:** Tsuki Hoshi & Selene Moonlight (SparkleSnap).
-- **Code co-author:** **Claude Opus 4.8-senpai** 🤖
-- **Voice:** [WaifuVoice](https://github.com/cesarborgenkrans-gif/WaifuVoice) (VoxCPM).
 
-© 2026 Cesar Borgenkrans / SparkleSnap. Original concept & characters are the author's
-intellectual property. **Private repository — all rights reserved.** Do not redistribute the
-code, the characters (Tsuki & Selene), or the SparkleSnap identity.
+- **Concept, design, and development:** Cesar Borgenkrans / SparkleSnap.
+- **Characters:** Tsuki Hoshi and Selene Moonlight.
+- **Voice:** [WaifuVoice](https://github.com/cesarborgenkrans-gif/WaifuVoice)
+  using VoxCPM.
+- **Code co-author:** Claude Opus 4.8-senpai, and GPT-5.5-chan, AI pair
+  programmers.
+- **Part of:** [SparkleSnap](https://sparklesnap.dev) and
+  [github.com/cesarborgenkrans-gif](https://github.com/cesarborgenkrans-gif).
 
-```text
- /\_/\
-( ^.^ )   thanks for visiting~
- > ^ <    one model, two souls, spoken into being
-```
+## License And Creative Reuse
+
+Copyright (c) 2026 Cesar Borgenkrans / SparkleSnap.
+
+The source code in this project is released under the MIT License. See
+[LICENSE](LICENSE). The MIT License applies to the code only.
+
+The characters and creative world around this project are meant to be adored,
+shared, and remixed. Fan art, fan fiction, small remixes, and other original fan
+works are welcome with friendly credit to Cesar Borgenkrans / SparkleSnap.
+SparkleSnap names, logos, official artwork files, visual identity, copy, fonts,
+and other brand assets remain outside the code license. Please do not present
+fan works as official releases or reuse SparkleSnap as your own brand.
+Commercial use of characters, official artwork, or SparkleSnap branding needs
+permission first.

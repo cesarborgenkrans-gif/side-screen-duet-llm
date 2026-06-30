@@ -1,7 +1,7 @@
 # dependencies
 node_modules/
 
-# machine-specific / personal — never publish
+# machine-specific / personal - never publish
 displays-detected.json
 *.local
 *.local.*

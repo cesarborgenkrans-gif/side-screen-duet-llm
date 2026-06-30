@@ -1,11 +1,18 @@
 {
-  "name": "duet-electron",
+  "name": "side-screen-duet-llm",
   "version": "1.0.0",
-  "description": "Duet — two-persona (Tsuki & Selene) live LLM orchestration dashboard (1440x2560 portrait panel)",
+  "description": "Side-screen two-persona LLM dialogue dashboard with optional WaifuVoice speech",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --windowed"
+  },
+  "build": {
+    "appId": "dev.sparklesnap.duet",
+    "productName": "Duet",
+    "win": {
+      "icon": "assets/icon.ico"
+    }
   },
   "devDependencies": {
     "electron": "^30.0.0"

@@ -13,6 +13,8 @@ const fsSync = require('fs');
 const TARGET_X = parseInt(process.env.FOUNDRY_TARGET_X || '3440', 10);
 const WINDOWED = process.argv.includes('--windowed');
 const MAX_TEXT = 60000;   // cap pasted/loaded document size sent to the model
+const APP_USER_MODEL_ID = 'dev.sparklesnap.duet';
+const APP_ICON = path.join(__dirname, 'assets', 'icon.ico');
 
 let mainWindow = null;
 
@@ -43,6 +45,7 @@ function pickTargetDisplay() {
 function createWindow() {
   const base = {
     frame: false, resizable: false, movable: false, alwaysOnTop: true,
+    icon: APP_ICON,
     backgroundColor: '#0d0d1a',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), nodeIntegration: false, contextIsolation: true }
   };
@@ -152,6 +155,8 @@ ipcMain.handle('open-url', async (_e, url) => {
   try { await shell.openExternal(url); return { ok: true }; }
   catch (e) { return { ok: false, error: e.message }; }
 });
+
+app.setAppUserModelId(APP_USER_MODEL_ID);
 
 app.whenReady().then(() => {
   logDisplays();
