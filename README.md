@@ -1,7 +1,7 @@
 # Duet - Side-Screen LLM Dialogue
 
 <p align="center">
-  <img src="assets/readme-banner.png" alt="Duet side-screen dashboard showing Tsuki and Selene in Academic Duel mode" width="760">
+  <img src="git-duet-llm-banner.png" alt="Duet side-screen dashboard showing Tsuki and Selene in Academic Duel mode" width="557">
 </p>
 
 ```text
