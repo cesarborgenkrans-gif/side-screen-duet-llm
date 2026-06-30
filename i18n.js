@@ -1,7 +1,7 @@
 /* ============================================================
    DUET — i18n (static, offline dictionary; Weglot-style data-i18n keys)
-   One language switch retargets: UI text + LLM reply language + VoxCPM voice.
-   Brand/model names (Tsuki, Selene, SparkleSnap, LM Studio, WaifuVoice, VRAM)
+   One language switch retargets: UI text + LLM reply language + requested voice language.
+   Brand/model names (Tsuki, Selene, SparkleSnap, LM Studio, VRAM)
    are deliberately left untranslated.
    ============================================================ */
 window.I18N_LANGS = [
@@ -20,7 +20,7 @@ window.I18N_LANGS = [
 window.I18N = {
   en: {
     settings: 'settings', lmurl: 'LM Studio Base URL', model: 'Model (optional)', temp: 'Temperature',
-    apikey: 'API Key (any, for local)', voiceurl: 'WaifuVoice URL', voiceon: '🔊 Voice output (auto-play)',
+    apikey: 'API Key (any, for local)', voiceurl: 'Voice server URL', voiceon: '🔊 Voice output (auto-play)',
     save: 'Save & test connection', langlabel: 'Interface & voice language', provider: 'LLM provider',
     srclabel: 'SOURCE — paste a "Copy as path" file (doc / code / image) or raw text',
     srcph: 'Paste text directly, or paste a local file path',
@@ -40,7 +40,7 @@ window.I18N = {
   },
   ja: {
     settings: '設定', lmurl: 'LM Studio ベースURL', model: 'モデル（任意）', temp: '温度',
-    apikey: 'APIキー（ローカル用、任意）', voiceurl: 'WaifuVoice URL', voiceon: '🔊 音声出力（自動再生）',
+    apikey: 'APIキー（ローカル用、任意）', voiceurl: '音声サーバーURL', voiceon: '🔊 音声出力（自動再生）',
     save: '保存して接続テスト', langlabel: 'インターフェースと音声の言語', provider: 'LLM プロバイダー',
     srclabel: 'ソース —「パスのコピー」のファイル（文書／コード／画像）または素のテキストを貼り付け',
     srcph: 'Paste text directly, or paste a local file path',
@@ -60,7 +60,7 @@ window.I18N = {
   },
   sv: {
     settings: 'inställningar', lmurl: 'LM Studio bas-URL', model: 'Modell (valfritt)', temp: 'Temperatur',
-    apikey: 'API-nyckel (valfri, för lokal)', voiceurl: 'WaifuVoice-URL', voiceon: '🔊 Röstuppspelning (auto)',
+    apikey: 'API-nyckel (valfri, för lokal)', voiceurl: 'Röstserver-URL', voiceon: '🔊 Röstuppspelning (auto)',
     save: 'Spara & testa anslutning', langlabel: 'Språk för gränssnitt & röst', provider: 'LLM-leverantör',
     srclabel: 'KÄLLA — klistra in en "Kopiera som sökväg"-fil (dok / kod / bild) eller råtext',
     srcph: 'Paste text directly, or paste a local file path',
@@ -80,7 +80,7 @@ window.I18N = {
   },
   zh: {
     settings: '设置', lmurl: 'LM Studio 基础地址', model: '模型（可选）', temp: '温度',
-    apikey: 'API 密钥（本地任意填）', voiceurl: 'WaifuVoice 地址', voiceon: '🔊 语音输出（自动播放）',
+    apikey: 'API 密钥（本地任意填）', voiceurl: '语音服务器地址', voiceon: '🔊 语音输出（自动播放）',
     save: '保存并测试连接', langlabel: '界面与语音语言', provider: 'LLM 提供方',
     srclabel: '来源 — 粘贴「复制为路径」的文件（文档／代码／图片）或纯文本',
     srcph: 'Paste text directly, or paste a local file path',
@@ -100,7 +100,7 @@ window.I18N = {
   },
   ko: {
     settings: '설정', lmurl: 'LM Studio 기본 URL', model: '모델 (선택)', temp: '온도',
-    apikey: 'API 키 (로컬용, 아무거나)', voiceurl: 'WaifuVoice URL', voiceon: '🔊 음성 출력 (자동 재생)',
+    apikey: 'API 키 (로컬용, 아무거나)', voiceurl: '음성 서버 URL', voiceon: '🔊 음성 출력 (자동 재생)',
     save: '저장 및 연결 테스트', langlabel: '인터페이스 & 음성 언어', provider: 'LLM 제공자',
     srclabel: '소스 — "경로로 복사" 파일(문서 / 코드 / 이미지) 또는 일반 텍스트 붙여넣기',
     srcph: 'Paste text directly, or paste a local file path',
@@ -120,7 +120,7 @@ window.I18N = {
   },
   de: {
     settings: 'Einstellungen', lmurl: 'LM Studio Basis-URL', model: 'Modell (optional)', temp: 'Temperatur',
-    apikey: 'API-Schlüssel (beliebig, lokal)', voiceurl: 'WaifuVoice-URL', voiceon: '🔊 Sprachausgabe (Auto)',
+    apikey: 'API-Schlüssel (beliebig, lokal)', voiceurl: 'Sprachserver-URL', voiceon: '🔊 Sprachausgabe (Auto)',
     save: 'Speichern & Verbindung testen', langlabel: 'Sprache für Oberfläche & Stimme', provider: 'LLM-Anbieter',
     srclabel: 'QUELLE — eine "Als Pfad kopieren"-Datei (Doku / Code / Bild) oder Rohtext einfügen',
     srcph: 'Paste text directly, or paste a local file path',
@@ -140,7 +140,7 @@ window.I18N = {
   },
   fr: {
     settings: 'paramètres', lmurl: 'URL de base LM Studio', model: 'Modèle (facultatif)', temp: 'Température',
-    apikey: 'Clé API (quelconque, local)', voiceurl: 'URL WaifuVoice', voiceon: '🔊 Sortie vocale (auto)',
+    apikey: 'Clé API (quelconque, local)', voiceurl: 'URL du serveur vocal', voiceon: '🔊 Sortie vocale (auto)',
     save: 'Enregistrer & tester', langlabel: "Langue de l'interface & de la voix", provider: 'Fournisseur LLM',
     srclabel: 'SOURCE — collez un fichier "Copier en tant que chemin" (doc / code / image) ou du texte brut',
     srcph: 'Paste text directly, or paste a local file path',
@@ -160,7 +160,7 @@ window.I18N = {
   },
   es: {
     settings: 'ajustes', lmurl: 'URL base de LM Studio', model: 'Modelo (opcional)', temp: 'Temperatura',
-    apikey: 'Clave API (cualquiera, local)', voiceurl: 'URL de WaifuVoice', voiceon: '🔊 Salida de voz (auto)',
+    apikey: 'Clave API (cualquiera, local)', voiceurl: 'URL del servidor de voz', voiceon: '🔊 Salida de voz (auto)',
     save: 'Guardar y probar conexión', langlabel: 'Idioma de interfaz y voz', provider: 'Proveedor LLM',
     srclabel: 'FUENTE — pega un archivo "Copiar como ruta" (doc / código / imagen) o texto sin formato',
     srcph: 'Paste text directly, or paste a local file path',
@@ -180,7 +180,7 @@ window.I18N = {
   },
   it: {
     settings: 'impostazioni', lmurl: 'URL base di LM Studio', model: 'Modello (opzionale)', temp: 'Temperatura',
-    apikey: 'Chiave API (qualsiasi, locale)', voiceurl: 'URL di WaifuVoice', voiceon: '🔊 Uscita vocale (auto)',
+    apikey: 'Chiave API (qualsiasi, locale)', voiceurl: 'URL server vocale', voiceon: '🔊 Uscita vocale (auto)',
     save: 'Salva e prova connessione', langlabel: 'Lingua di interfaccia e voce', provider: 'Provider LLM',
     srclabel: 'SORGENTE — incolla un file "Copia come percorso" (doc / codice / immagine) o testo semplice',
     srcph: 'Paste text directly, or paste a local file path',
@@ -200,7 +200,7 @@ window.I18N = {
   },
   pt: {
     settings: 'configurações', lmurl: 'URL base do LM Studio', model: 'Modelo (opcional)', temp: 'Temperatura',
-    apikey: 'Chave API (qualquer, local)', voiceurl: 'URL do WaifuVoice', voiceon: '🔊 Saída de voz (auto)',
+    apikey: 'Chave API (qualquer, local)', voiceurl: 'URL do servidor de voz', voiceon: '🔊 Saída de voz (auto)',
     save: 'Salvar e testar conexão', langlabel: 'Idioma da interface e da voz', provider: 'Provedor de LLM',
     srclabel: 'FONTE — cole um arquivo "Copiar como caminho" (doc / código / imagem) ou texto simples',
     srcph: 'Paste text directly, or paste a local file path',

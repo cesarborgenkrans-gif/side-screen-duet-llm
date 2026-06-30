@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('duet', {
   // LLM (proxied to LM Studio to dodge CORS); accepts a full messages[] array (supports vision)
   llmChat: opts => ipcRenderer.invoke('llm-chat', opts),
   llmModels: opts => ipcRenderer.invoke('llm-models', opts),
-  // WaifuVoice add-on: TTS + VRAM telemetry/unload
+  // Compatible local TTS: generation + VRAM telemetry/unload
   ttsGenerate: opts => ipcRenderer.invoke('tts-generate', opts),
   vramTelemetry: baseURL => ipcRenderer.invoke('vram-telemetry', baseURL),
   openURL: url => ipcRenderer.invoke('open-url', url),

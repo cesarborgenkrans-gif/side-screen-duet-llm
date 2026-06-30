@@ -47,7 +47,7 @@
   let settings = loadSettings();
   const trimURL = u => (u || DEFAULTS.url).replace(/\/+$/, '');
 
-  // Per-mascot VoxCPM voice-design prompts (WaifuVoice add-on) — the two voices differ here.
+  // Per-mascot voice-design prompts for a compatible local TTS endpoint.
   const VOICE_DESIGN = {
     tsuki:  'A bright, youthful, energetic young woman; light and airy, clear and expressive, slightly high-pitched and playful, warm anime-idol energy.',
     selene: 'A soft, calm, dreamy young woman; gentle and breathy, lower-pitched and soothing, slow and a little mysterious, elegant and ethereal.'
@@ -319,12 +319,12 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     setStatus(abort ? t('st_stopped', { n: transcript.length }) : t('st_done', { n: transcript.length, mode: modeName(currentMode) }), abort ? 'warn' : 'ok');
   }
 
-  // ── VRAM overload protection (WaifuVoice telemetry) ──
+  // ── VRAM overload protection (local TTS telemetry) ──
   function renderVram(r) {
     const el = $('vram'); if (!el) return;
     if (!r || !r.ok || !r.available) {
       el.className = 'vram off'; el.textContent = 'VRAM —';
-      el.title = (r && (r.error || r.reason)) || 'WaifuVoice telemetry offline';
+      el.title = (r && (r.error || r.reason)) || 'Local TTS telemetry offline';
       const bar = $('vram-bar'); if (bar) bar.style.width = '0%';
       return;
     }
@@ -444,6 +444,6 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     pollVram(); setInterval(pollVram, 6000);   // VRAM gauge
   } else {
     $('filebanner').hidden = false;
-    $('filebanner').innerHTML = '⚠ <b>Browser preview.</b> File reads, voice synthesis, and VRAM telemetry need the <b>Electron</b> app (<code>npm start</code>) + a running WaifuVoice. Raw text + LLM still work here.';
+    $('filebanner').innerHTML = '⚠ <b>Browser preview.</b> File reads, voice synthesis, and VRAM telemetry need the <b>Electron</b> app (<code>npm start</code>) + a compatible local TTS server. Raw text + LLM still work here.';
   }
 })();

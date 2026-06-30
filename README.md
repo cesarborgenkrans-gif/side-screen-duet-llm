@@ -1,5 +1,9 @@
 # Duet - Side-Screen LLM Dialogue
 
+<p align="center">
+  <img src="assets/readme-banner.png" alt="Duet side-screen dashboard showing Tsuki and Selene in Academic Duel mode" width="760">
+</p>
+
 ```text
  /\_/\   /\_/\
 ( o.o ) ( -.- )   DUET
@@ -8,7 +12,8 @@
 
 Duet is a compact Electron dashboard for a small secondary display beside your
 main screen. Tsuki Hoshi and Selene Moonlight take turns analyzing a source with
-one OpenAI-compatible model, while WaifuVoice can speak each line as it appears.
+one OpenAI-compatible model, while an optional local TTS endpoint can speak each
+line as it appears.
 
 The character layer keeps the panel lively. The useful work comes from the
 selected mode, which gives each speaker a concrete role and keeps the dialogue
@@ -22,12 +27,12 @@ on task.
 - **Runs two roles on one model:** Tsuki and Selene alternate over the same
   transcript so each answer can build on the previous one.
 - **Offers focused modes:** Roast, Academic Duel, Comedy Skit, and Deep Dive.
-- **Speaks when WaifuVoice is available:** each character has a distinct voice
+- **Speaks when local TTS is available:** each character has a distinct voice
   prompt; without voice, Duet stays usable as text.
 - **Waits between turns:** the next model call starts after the current text and
   optional audio finish.
 - **Supports ten languages:** one selector controls UI text, reply language, and
-  VoxCPM voice language.
+  the requested voice language.
 
 ## Requirements
 
@@ -37,10 +42,11 @@ on task.
   - Ollama at `http://localhost:11434/v1`
   - OpenRouter at `https://openrouter.ai/api/v1`
   - any compatible custom endpoint
-- Optional WaifuVoice/VoxCPM at `http://localhost:3113` for spoken dialogue.
+- Optional local TTS server at `http://localhost:3113` with a
+  WaifuVoice-compatible `/api/generate` endpoint for spoken dialogue.
 
 For image sources, choose a vision-capable model. Local LM Studio, Ollama, and
-WaifuVoice runs keep source material on your machine. A cloud endpoint receives
+local TTS runs keep source material on your machine. A cloud endpoint receives
 the text or image content you submit and may cost money per call.
 
 ## Run
@@ -61,9 +67,9 @@ npm run dev
 ## Use
 
 1. Start your LLM server or prepare an OpenRouter/custom key.
-2. Start WaifuVoice if you want spoken dialogue.
+2. Start a compatible local TTS server if you want spoken dialogue.
 3. Open settings and choose provider, model, temperature, API key if needed, and
-   WaifuVoice URL.
+   voice URL.
 4. Paste a source, pick a mode, and start the exchange.
 
 Modes:
@@ -88,8 +94,8 @@ that is intentional.
 
 - **Concept, design, and development:** Cesar Borgenkrans / SparkleSnap.
 - **Characters:** Tsuki Hoshi and Selene Moonlight.
-- **Voice:** [WaifuVoice](https://github.com/cesarborgenkrans-gif/WaifuVoice)
-  using VoxCPM.
+- **Voice integration:** optional local TTS endpoint using the
+  WaifuVoice-compatible JSON API shape.
 - **Code co-author:** Claude Opus 4.8-senpai, and GPT-5.5-chan, AI pair
   programmers.
 - **Part of:** [SparkleSnap](https://sparklesnap.dev) and

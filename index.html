@@ -18,7 +18,7 @@
         <select id="lang-select" class="lang-select" title="Interface & voice language"></select>
         <span id="vram" class="vram off" title="">VRAM —</span>
         <span id="conn" class="conn checking" title="">◐ checking…</span>
-        <button id="gear" class="ghost" title="LM Studio + WaifuVoice settings">⚙ <span data-i18n="settings">settings</span></button>
+        <button id="gear" class="ghost" title="LLM and voice settings">⚙ <span data-i18n="settings">settings</span></button>
       </div>
     </header>
 
@@ -37,7 +37,7 @@
       <label><span data-i18n="model">Model (optional)</span><input id="cfg-model" type="text" placeholder="(uses the loaded model)"></label>
       <label><span data-i18n="temp">Temperature</span><input id="cfg-temp" type="number" min="0" max="2" step="0.1" value="0.7"></label>
       <label><span data-i18n="apikey">API Key (any, for local)</span><input id="cfg-key" type="text" placeholder="lm-studio"></label>
-      <label><span data-i18n="voiceurl">WaifuVoice URL</span><input id="cfg-voice-url" type="text" placeholder="http://localhost:3113"></label>
+      <label><span data-i18n="voiceurl">Voice server URL</span><input id="cfg-voice-url" type="text" placeholder="http://localhost:3113"></label>
       <label class="chk"><input id="cfg-voice-on" type="checkbox"> <span data-i18n="voiceon">🔊 Voice output (auto-play)</span></label>
       <div class="row-actions">
         <button id="cfg-save" class="primary" data-i18n="save">Save &amp; test connection</button>
