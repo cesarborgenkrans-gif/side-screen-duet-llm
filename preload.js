@@ -10,4 +10,7 @@ contextBridge.exposeInMainWorld('duet', {
   ttsGenerate: opts => ipcRenderer.invoke('tts-generate', opts),
   vramTelemetry: baseURL => ipcRenderer.invoke('vram-telemetry', baseURL),
   openURL: url => ipcRenderer.invoke('open-url', url),
+  // move the frameless window: 'panel' (side screen) | 'main' (primary strip) | undefined (toggle)
+  moveWindow: target => ipcRenderer.invoke('move-window', target),
+  windowLocation: () => ipcRenderer.invoke('window-location'),
 });

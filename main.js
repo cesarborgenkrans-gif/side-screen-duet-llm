@@ -11,12 +11,17 @@ const fs = require('fs/promises');
 const fsSync = require('fs');
 
 const TARGET_X = parseInt(process.env.FOUNDRY_TARGET_X || '3440', 10);
+// On the big main monitor the panel-tuned UI is physically huge, so shrink the
+// *contents* (not the window) via Chromium zoom. 1 = panel size; lower = smaller.
+const MAIN_ZOOM = Math.min(1, Math.max(0.2, parseFloat(process.env.FOUNDRY_MAIN_ZOOM || '0.5')));
 const WINDOWED = process.argv.includes('--windowed');
 const MAX_TEXT = 60000;   // cap pasted/loaded document size sent to the model
 const APP_USER_MODEL_ID = 'dev.sparklesnap.duet';
 const APP_ICON = path.join(__dirname, 'assets', 'icon.ico');
 
 let mainWindow = null;
+let panelBounds = null;          // the side-screen bounds the app was born on
+let currentLocation = 'panel';   // 'panel' (side screen) | 'main' (primary monitor strip)
 
 function logDisplays() {
   const primaryId = screen.getPrimaryDisplay().id;
@@ -60,8 +65,54 @@ function createWindow() {
     mainWindow.webContents.once('did-finish-load', enforce);
   }
   mainWindow.loadFile('index.html');
+  // remember where the app was born (the side panel) so we can send it back home
+  const [bx, by] = mainWindow.getPosition();
+  const [bw, bh] = mainWindow.getSize();
+  panelBounds = { x: bx, y: by, width: bw, height: bh };
+  currentLocation = 'panel';
   mainWindow.on('closed', () => (mainWindow = null));
 }
+
+// Compute a portrait strip on the RIGHT edge of the primary (main) monitor,
+// preserving the panel's own aspect ratio. Uses workArea so it never hides
+// behind the taskbar, and auto-fits any main screen — 16:9 or 21:9 alike.
+function computeMainStripBounds() {
+  const primary = screen.getPrimaryDisplay();
+  const wa = primary.workArea;                         // {x,y,width,height}
+  const aspect = (panelBounds && panelBounds.height)   // width / height of the dashboard
+    ? panelBounds.width / panelBounds.height
+    : 0.5625;                                          // fallback 9:16 portrait
+  let h = wa.height;
+  let w = Math.round(h * aspect);
+  const maxW = Math.round(wa.width * 0.6);             // never eat more than 60% of the main screen
+  if (w > maxW) { w = maxW; h = Math.round(w / aspect); }
+  const x = wa.x + wa.width - w;                       // flush to the right edge
+  const y = wa.y + Math.round((wa.height - h) / 2);    // vertically centred
+  return { x, y, width: w, height: h };
+}
+
+// ── move the window between the side panel and the main-monitor strip ──
+ipcMain.handle('move-window', async (_e, target) => {
+  if (!mainWindow) return { ok: false, error: 'no window' };
+  const dest = (target === 'panel' || target === 'main')
+    ? target
+    : (currentLocation === 'panel' ? 'main' : 'panel');   // no arg → toggle
+  const b = dest === 'main' ? computeMainStripBounds() : panelBounds;
+  if (!b) return { ok: false, error: 'no target bounds' };
+  const zoom = dest === 'main' ? MAIN_ZOOM : 1;
+  try {
+    mainWindow.setBounds(b);
+    try { mainWindow.webContents.setZoomFactor(zoom); } catch {}
+    // some GPU drivers clamp an off-primary move; re-assert on the next tick
+    setTimeout(() => {
+      try { mainWindow.setBounds(b); } catch {}
+      try { mainWindow.webContents.setZoomFactor(zoom); } catch {}
+    }, 60);
+    currentLocation = dest;
+    return { ok: true, location: dest, zoom };
+  } catch (e) { return { ok: false, error: e.message }; }
+});
+ipcMain.handle('window-location', async () => ({ ok: true, location: currentLocation }));
 
 // ── read a source: file path (text/image) or raw pasted text ──
 const IMG_MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.bmp': 'image/bmp' };

@@ -33,6 +33,8 @@ textarea,input{cursor:url('assets/cursor-active.svg') 8 8, text;}
 button{font-family:var(--ui);border-radius:10px;transition:all .2s;}
 .ghost{background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);padding:13px 20px;font-size:1.82rem;}
 .ghost:hover{border-color:var(--border-hot);color:var(--text);}
+.ghost.active{background:rgba(224,64,251,.18);border-color:var(--border-hot);color:#fff;box-shadow:0 0 16px rgba(224,64,251,.25);}
+.ghost:disabled{opacity:.55;cursor:progress;}
 .primary{background:linear-gradient(145deg,rgba(224,64,251,.25),rgba(124,77,255,.1)),var(--surface2);
   border:1px solid var(--border-hot);color:#fff;padding:12px 20px;font-size:1.3rem;}
 .primary:hover{box-shadow:0 0 22px rgba(224,64,251,.3);transform:translateY(-1px);}

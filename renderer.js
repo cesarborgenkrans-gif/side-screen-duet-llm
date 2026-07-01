@@ -379,6 +379,26 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   }
 
   $('gear').addEventListener('click', () => { $('settings').hidden = !$('settings').hidden; });
+
+  // ── screen toggle: hop the window between the side panel and the main-monitor strip ──
+  (function wireScreenToggle() {
+    const btn = $('screen-toggle');
+    if (!btn) return;
+    if (!bridge || !bridge.moveWindow) { btn.hidden = true; return; }  // no-op outside Electron
+    const label = $('screen-toggle-label');
+    const paint = loc => {
+      const onMain = loc === 'main';
+      if (label) label.textContent = onMain ? 'side screen' : 'main screen';
+      btn.title = onMain ? 'Move back to the side screen' : 'Move to the main screen';
+      btn.classList.toggle('active', onMain);
+    };
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      try { const r = await bridge.moveWindow(); if (r && r.ok) paint(r.location); }
+      finally { btn.disabled = false; }
+    });
+    bridge.windowLocation && bridge.windowLocation().then(r => r && r.ok && paint(r.location));
+  })();
   // provider preset → prefill the base URL + hint the key/model fields (core LLM code untouched)
   $('cfg-provider').addEventListener('change', e => {
     const p = PROVIDERS[e.target.value] || {};
