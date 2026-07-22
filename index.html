@@ -15,11 +15,11 @@
     <header class="topbar">
       <div class="brand">🎭 DUET <span>// tsuki × selene · 🔊 voice</span></div>
       <div class="right">
-        <select id="lang-select" class="lang-select" title="Interface & voice language"></select>
+        <select id="lang-select" class="lang-select" title="Interface & voice language" data-i18n-title="langlabel"></select>
         <span id="vram" class="vram off" title="">VRAM —</span>
         <span id="conn" class="conn checking" title="">◐ checking…</span>
-        <button id="screen-toggle" class="ghost" title="Move to main screen">🖥 <span id="screen-toggle-label">main screen</span></button>
-        <button id="gear" class="ghost" title="LLM and voice settings">⚙ <span data-i18n="settings">settings</span></button>
+        <button id="screen-toggle" class="ghost" title="Move the window between the main and side screens" data-i18n-title="screen_move_title">🖥 <span id="screen-toggle-label" data-i18n="scr_main">main screen</span></button>
+        <button id="gear" class="ghost" title="LLM and voice settings" data-i18n-title="settings_title">⚙ <span data-i18n="settings">settings</span></button>
       </div>
     </header>
 
@@ -28,10 +28,10 @@
     <section id="settings" class="settings" hidden>
       <label><span data-i18n="provider">LLM provider</span>
         <select id="cfg-provider">
-          <option value="lmstudio">LM Studio (local)</option>
-          <option value="ollama">Ollama (local)</option>
-          <option value="openrouter">OpenRouter (cloud)</option>
-          <option value="custom">Custom</option>
+          <option value="lmstudio" data-i18n="provider_lmstudio">LM Studio (local)</option>
+          <option value="ollama" data-i18n="provider_ollama">Ollama (local)</option>
+          <option value="openrouter" data-i18n="provider_openrouter">OpenRouter (cloud)</option>
+          <option value="custom" data-i18n="provider_custom">Custom</option>
         </select>
       </label>
       <label><span data-i18n="lmurl">LM Studio Base URL</span><input id="cfg-url" type="text" placeholder="http://localhost:1234/v1"></label>
@@ -109,6 +109,7 @@
     </footer>
 
   </div>
+  <script src="locales/duet-locales.js"></script>
   <script src="i18n.js"></script>
   <script src="renderer.js"></script>
 </body>

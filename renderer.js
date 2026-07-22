@@ -31,6 +31,7 @@
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
   }
 
   // ── settings ──
@@ -38,10 +39,10 @@
                      voiceURL: 'http://localhost:3113', voiceOn: true, provider: 'lmstudio' };
   // LLM provider presets — all OpenAI-compatible, so only the base URL (and key/model hints) differ.
   const PROVIDERS = {
-    lmstudio:   { label: 'LM Studio',  url: 'http://localhost:1234/v1' },
-    ollama:     { label: 'Ollama',     url: 'http://localhost:11434/v1', modelHint: 'e.g. llama3.2 (must be pulled)' },
-    openrouter: { label: 'OpenRouter', url: 'https://openrouter.ai/api/v1', keyHint: 'OpenRouter API key', modelHint: 'e.g. anthropic/claude-3.7-sonnet' },
-    custom:     { label: 'Custom' },
+    lmstudio:   { labelKey: 'provider_lmstudio',  url: 'http://localhost:1234/v1' },
+    ollama:     { labelKey: 'provider_ollama',    url: 'http://localhost:11434/v1', modelHintKey: 'model_hint_ollama' },
+    openrouter: { labelKey: 'provider_openrouter', url: 'https://openrouter.ai/api/v1', keyHintKey: 'key_hint_openrouter', modelHintKey: 'model_hint_openrouter' },
+    custom:     { labelKey: 'provider_custom' },
   };
   const loadSettings = () => { try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('duet-settings') || '{}') }; } catch { return { ...DEFAULTS }; } };
   let settings = loadSettings();
@@ -171,8 +172,8 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     const el = $('conn');
     el.className = 'conn checking'; el.textContent = '◐ ' + t('conn_checking');
     const r = await llmModels();
-    const prov = (PROVIDERS[settings.provider] || {}).label || 'LLM';
-    if (r.ok) { const m = r.models[0] || 'model loaded'; el.className = 'conn ok'; el.textContent = `● ${prov} · ${m}`; el.title = (r.models || []).join(', '); }
+    const prov = t((PROVIDERS[settings.provider] || {}).labelKey || 'provider_custom');
+    if (r.ok) { const m = r.models[0] || t('model_loaded_generic'); el.className = 'conn ok'; el.textContent = `● ${prov} · ${m}`; el.title = (r.models || []).join(', '); }
     else { el.className = 'conn off'; el.textContent = '● ' + t('conn_off'); el.title = r.error || ''; }
   }
 
@@ -324,13 +325,13 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     const el = $('vram'); if (!el) return;
     if (!r || !r.ok || !r.available) {
       el.className = 'vram off'; el.textContent = 'VRAM —';
-      el.title = (r && (r.error || r.reason)) || 'Local TTS telemetry offline';
+      el.title = (r && (r.error || r.reason)) || t('vram_offline');
       const bar = $('vram-bar'); if (bar) bar.style.width = '0%';
       return;
     }
     el.className = 'vram' + (r.warning ? ' warn' : ' ok');
     el.textContent = `VRAM ${r.used_gib}/${r.total_gib} GB`;
-    el.title = `${r.device_name || 'GPU'} · free ${r.free_gib} GB · voice needs ~${r.estimated_required_gib} GB`;
+    el.title = t('vram_details', { device: r.device_name || 'GPU', free: r.free_gib, required: r.estimated_required_gib });
     const bar = $('vram-bar'); if (bar && r.total_gib) bar.style.width = Math.min(100, Math.round((r.used_gib / r.total_gib) * 100)) + '%';
   }
   async function pollVram() {
@@ -341,7 +342,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     const r = await bridge.vramTelemetry(settings.voiceURL);
     renderVram(r);
     if (r && r.ok && r.available && r.warning) {
-      setStatus(`⚠ Low VRAM: only ${r.free_gib} GB free, voice needs ~${r.estimated_required_gib} GB. A big LLM + voice may overload your GPU — consider a smaller/quantized LLM.`, 'warn');
+      setStatus(`⚠ ${t('vram_low', { free: r.free_gib, required: r.estimated_required_gib })}`, 'warn');
       await new Promise(res => setTimeout(res, 1600));
     }
   }
@@ -359,10 +360,10 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
       setStatus(t('st_srcloaded'), 'ok');
     } else {
       // browser: no disk access — treat the box as raw text
-      source = { kind: 'text', name: '(pasted text)', text: raw.trim(), truncated: false };
-      $('src-chip').textContent = `📄 pasted text · ${source.text.length} chars (browser: file paths can't be read — run via Electron)`;
+      source = { kind: 'text', name: t('pasted_text'), text: raw.trim(), truncated: false };
+      $('src-chip').textContent = t('chip_text', { name: source.name, n: source.text.length });
       $('src-chip').className = 'src-chip ok';
-      setStatus('Loaded pasted text. (File-path reading + vision need the Electron app.)', 'warn');
+      setStatus(t('browser_banner'), 'warn');
     }
   }
 
@@ -381,30 +382,38 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   $('gear').addEventListener('click', () => { $('settings').hidden = !$('settings').hidden; });
 
   // ── screen toggle: hop the window between the side panel and the main-monitor strip ──
+  let screenLocation = 'side';
+  const paintScreenToggle = loc => {
+    const btn = $('screen-toggle');
+    if (!btn) return;
+    screenLocation = loc || screenLocation;
+    const onMain = screenLocation === 'main';
+    const label = $('screen-toggle-label');
+    if (label) label.textContent = t(onMain ? 'scr_side' : 'scr_main');
+    btn.title = t('screen_move_title');
+    btn.classList.toggle('active', onMain);
+  };
   (function wireScreenToggle() {
     const btn = $('screen-toggle');
     if (!btn) return;
     if (!bridge || !bridge.moveWindow) { btn.hidden = true; return; }  // no-op outside Electron
-    const label = $('screen-toggle-label');
-    const paint = loc => {
-      const onMain = loc === 'main';
-      if (label) label.textContent = onMain ? 'side screen' : 'main screen';
-      btn.title = onMain ? 'Move back to the side screen' : 'Move to the main screen';
-      btn.classList.toggle('active', onMain);
-    };
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      try { const r = await bridge.moveWindow(); if (r && r.ok) paint(r.location); }
+      try { const r = await bridge.moveWindow(); if (r && r.ok) paintScreenToggle(r.location); }
       finally { btn.disabled = false; }
     });
-    bridge.windowLocation && bridge.windowLocation().then(r => r && r.ok && paint(r.location));
+    bridge.windowLocation && bridge.windowLocation().then(r => r && r.ok && paintScreenToggle(r.location));
   })();
+  function refreshProviderHints() {
+    const p = PROVIDERS[$('cfg-provider').value] || {};
+    $('cfg-key').placeholder = p.keyHintKey ? t(p.keyHintKey) : 'lm-studio';
+    $('cfg-model').placeholder = p.modelHintKey ? t(p.modelHintKey) : t('model_loaded_generic');
+  }
   // provider preset → prefill the base URL + hint the key/model fields (core LLM code untouched)
   $('cfg-provider').addEventListener('change', e => {
     const p = PROVIDERS[e.target.value] || {};
     if (p.url) $('cfg-url').value = p.url;
-    $('cfg-key').placeholder = p.keyHint || 'lm-studio';
-    $('cfg-model').placeholder = p.modelHint || '(uses the loaded model)';
+    refreshProviderHints();
   });
   $('cfg-save').addEventListener('click', () => {
     settings = {
@@ -414,12 +423,12 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
       voiceURL: $('cfg-voice-url').value.trim() || DEFAULTS.voiceURL, voiceOn: $('cfg-voice-on').checked
     };
     localStorage.setItem('duet-settings', JSON.stringify(settings));
-    $('cfg-status').textContent = 'Saved ✓'; setTimeout(() => { $('cfg-status').textContent = ''; }, 1500);
+    $('cfg-status').textContent = t('settings_saved'); setTimeout(() => { $('cfg-status').textContent = ''; }, 1500);
     checkConnection(); pollVram();
   });
   $('btn-load').addEventListener('click', loadSource);
   $('btn-run').addEventListener('click', runDuet);
-  $('btn-stop').addEventListener('click', () => { abort = true; stopAudio(); setStatus('Stopping…', 'warn'); });
+  $('btn-stop').addEventListener('click', () => { abort = true; stopAudio(); setStatus(t('st_stopping'), 'warn'); });
   document.querySelectorAll('#modes .mode').forEach(m => m.addEventListener('click', () => {
     currentMode = m.dataset.mode; localStorage.setItem('duet-mode', currentMode); setActiveMode();
     setStatus(t('st_modeset', { mode: modeName(currentMode) }), 'ok');
@@ -432,6 +441,8 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   function refreshDynamicI18n() {
     if (!running) $('log-tag').textContent = tag('tag_idle');
     if (!source) $('src-chip').textContent = t('chipnone');
+    refreshProviderHints();
+    paintScreenToggle(screenLocation);
     renderEmptyLog();
     checkConnection();
   }
@@ -454,6 +465,7 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
   // ── init ──
   applyStaticI18n();
   applySettingsToFields();
+  refreshProviderHints();
   setActiveMode();
   $('log-tag').textContent = tag('tag_idle');
   $('src-chip').textContent = t('chipnone');
@@ -464,6 +476,6 @@ HARD VOICE RULE: never use flat gen-z/gyaru slang ("no cap", "periodt", "vibing"
     pollVram(); setInterval(pollVram, 6000);   // VRAM gauge
   } else {
     $('filebanner').hidden = false;
-    $('filebanner').innerHTML = '⚠ <b>Browser preview.</b> File reads, voice synthesis, and VRAM telemetry need the <b>Electron</b> app (<code>npm start</code>) + a compatible local TTS server. Raw text + LLM still work here.';
+    $('filebanner').textContent = `⚠ ${t('browser_banner')}`;
   }
 })();

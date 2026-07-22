@@ -31,7 +31,7 @@ on task.
   prompt; without voice, Duet stays usable as text.
 - **Waits between turns:** the next model call starts after the current text and
   optional audio finish.
-- **Supports ten languages:** one selector controls UI text, reply language, and
+- **Supports 21 languages:** one selector controls UI text, reply language, and
   the requested voice language.
 
 ## Requirements
@@ -81,7 +81,7 @@ Modes:
 
 ## Files And Privacy
 
-Keep the app source, `i18n.js`, `TRANSLATION.md`, `assets/`, `souls/`,
+Keep the app source, `locales/`, `i18n.js`, `TRANSLATION.md`, `assets/`, `souls/`,
 `personas/`, `package-lock.json`, `LICENSE`, and this README together for a
 standalone copy.
 
