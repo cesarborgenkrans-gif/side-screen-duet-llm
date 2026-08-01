@@ -31,7 +31,7 @@ on task.
   prompt; without voice, Duet stays usable as text.
 - **Waits between turns:** the next model call starts after the current text and
   optional audio finish.
-- **Supports 21 languages:** one selector controls UI text, reply language, and
+- **Supports 18 languages:** one selector controls UI text, reply language, and
   the requested voice language.
 
 ## Requirements

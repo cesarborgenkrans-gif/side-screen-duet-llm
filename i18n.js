@@ -20,10 +20,7 @@
     { code: 'fr', native: 'Français', llm: 'French', voxcpm: 'French' },
     { code: 'de', native: 'Deutsch', llm: 'German', voxcpm: 'German' },
     { code: 'pl', native: 'Polski', llm: 'Polish', voxcpm: 'Polish' },
-    { code: 'tr', native: 'Türkçe', llm: 'Turkish', voxcpm: 'Turkish' },
     { code: 'ru', native: 'Русский', llm: 'Russian', voxcpm: 'Russian' },
-    { code: 'uk', native: 'Українська', llm: 'Ukrainian', voxcpm: 'Ukrainian' },
-    { code: 'el', native: 'Ελληνικά', llm: 'Greek', voxcpm: 'Greek' },
     { code: 'it', native: 'Italiano', llm: 'Italian', voxcpm: 'Italian' },
     { code: 'ms', native: 'Bahasa Melayu', llm: 'Malay', voxcpm: 'Malay' }
   ];

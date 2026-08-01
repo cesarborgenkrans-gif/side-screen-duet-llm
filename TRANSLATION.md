@@ -1,6 +1,6 @@
 # Translation maintenance
 
-Duet ships static, offline locale packages for 21 languages. One language
+Duet ships static, offline locale packages for 18 languages. One language
 selector retargets the interface, the requested LLM reply language, and the
 optional local voice language.
 
