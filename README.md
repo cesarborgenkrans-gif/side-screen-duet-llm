@@ -1,6 +1,32 @@
 # Duet - Side-Screen LLM Dialogue
 
 <p align="center">
+  <a href="https://github.com/cesarborgenkrans-gif/duo-voice-harness">
+    <img src="assets/duet-evolved-banner.png" alt="Evolved into Duo Voice Harness" width="100%">
+  </a>
+</p>
+
+> [!IMPORTANT]
+> ### 🚀 This project has evolved into [Duo Voice Harness](https://github.com/cesarborgenkrans-gif/duo-voice-harness)
+> 
+> **Duet's core concept—two AI companions trading perspectives across structured discussion modes—is now canonical in [Duo Voice Harness](https://github.com/cesarborgenkrans-gif/duo-voice-harness).**
+>
+> All four signature interaction modes from this prototype have been upgraded and preserved as one-click composer seeds:
+> * 🔥 **Roast:** Tag-team witty deconstruction of ideas.
+> * ⚔️ **Academic Duel:** Defender vs incisive edge-case critic.
+> * 🎭 **Comedy Skit:** Line-by-line character improv.
+> * 🔍 **Deep Dive:** Big-picture scout vs risk mystic.
+>
+> **What you get in Duo Voice Harness:**
+> * 🎙️ **Full-Duplex Streaming Voice:** Instant local VoxCPM2, Cartesia, or ElevenLabs synthesis.
+> * 🛑 **Mic Barge-In:** Interrupt companions naturally with hands-free speech detection.
+> * 👾 **Physics-Reactive Sprites:** Expressive Momotamu & Vivi animation rigs with squash-and-stretch.
+> * 🌐 **Cyberpunk Holodeck:** 3D audio-reactive stage backdrop.
+> * 🛡️ **Anti-Hallucination Document Gates:** Ground discussions in real text and Markdown files.
+>
+> 👉 **[Visit the new Duo Voice Harness repository →](https://github.com/cesarborgenkrans-gif/duo-voice-harness)**
+
+<p align="center">
   <img src="git-duet-llm-banner.png" alt="Duet side-screen dashboard showing Tsuki and Selene in Academic Duel mode" width="557">
 </p>
 
