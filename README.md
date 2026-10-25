@@ -7,24 +7,24 @@
 </p>
 
 > [!IMPORTANT]
-> ### 🚀 This project has evolved into [Duo Voice Harness](https://github.com/cesarborgenkrans-gif/duo-voice-harness)
+> ### 🚀 Side-Screen Duet has evolved into [Duo Voice Harness](https://github.com/cesarborgenkrans-gif/duo-voice-harness)
 > 
-> **Duet's core concept—two AI companions trading perspectives across structured discussion modes—is now canonical in [Duo Voice Harness](https://github.com/cesarborgenkrans-gif/duo-voice-harness).**
+> **The original idea behind Duet—two AI companions trading perspectives in real time—is now a full-fledged, real-time voice stage in [Duo Voice Harness](https://github.com/cesarborgenkrans-gif/duo-voice-harness).**
 >
-> All four signature interaction modes from this prototype have been upgraded and preserved as one-click composer seeds:
-> * 🔥 **Roast:** Tag-team witty deconstruction of ideas.
-> * ⚔️ **Academic Duel:** Defender vs incisive edge-case critic.
-> * 🎭 **Comedy Skit:** Line-by-line character improv.
-> * 🔍 **Deep Dive:** Big-picture scout vs risk mystic.
+> All four signature interaction modes from this prototype have been upgraded into instant, one-click composer seeds:
+> * 🔥 **Roast:** Tag-team witty deconstruction of ideas, drafts, and code.
+> * ⚔️ **Academic Duel:** Socratic defense against an incisive edge-case critic.
+> * 🎭 **Comedy Skit:** Fluid line-by-line banter and narrative improv.
+> * 🔍 **Deep Dive:** Big-picture scout balanced by pragmatic risk analysis.
 >
-> **What you get in Duo Voice Harness:**
-> * 🎙️ **Full-Duplex Streaming Voice:** Instant local VoxCPM2, Cartesia, or ElevenLabs synthesis.
-> * 🛑 **Mic Barge-In:** Interrupt companions naturally with hands-free speech detection.
-> * 👾 **Physics-Reactive Sprites:** Expressive Momotamu & Vivi animation rigs with squash-and-stretch.
-> * 🌐 **Cyberpunk Holodeck:** 3D audio-reactive stage backdrop.
-> * 🛡️ **Anti-Hallucination Document Gates:** Ground discussions in real text and Markdown files.
+> **What makes Duo Voice Harness the next leap forward:**
+> * 🎙️ **Zero-Friction Streaming Voice:** Low-latency voice synthesis via local VoxCPM2, Cartesia, or ElevenLabs.
+> * 🛑 **Natural Mic Barge-In:** Speak anytime—companions stop and listen hands-free the moment you speak.
+> * 👾 **Physics-Reactive Sprites:** Audio-reactive companion animation rigs with real-time squash-and-stretch.
+> * 🌐 **Cyberpunk 3D Stage:** An audio-reactive Holodeck stage tuned for secondary horizontal and vertical displays.
+> * 🛡️ **Anti-Hallucination Document Gates:** Ground live discussions in your local Markdown notes and code.
 >
-> 👉 **[Visit the new Duo Voice Harness repository →](https://github.com/cesarborgenkrans-gif/duo-voice-harness)**
+> 👉 **[Take the stage with Duo Voice Harness →](https://github.com/cesarborgenkrans-gif/duo-voice-harness)**
 
 <p align="center">
   <img src="git-duet-llm-banner.png" alt="Duet side-screen dashboard showing Tsuki and Selene in Academic Duel mode" width="557">
